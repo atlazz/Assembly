@@ -1,0 +1,50 @@
+{
+  "android-instant": {
+    "REMOTE_SERVER_ROOT": "",
+    "host": "",
+    "pathPattern": "",
+    "recordPath": "",
+    "scheme": "https",
+    "skipRecord": false
+  },
+  "appBundle": false,
+  "baidugame": {
+    "REMOTE_SERVER_ROOT": "",
+    "appid": "testappid",
+    "orientation": "portrait",
+    "subContext": ""
+  },
+  "encryptJs": true,
+  "excludeScenes": [],
+  "fb-instant-games": {},
+  "includeSDKBox": false,
+  "inlineSpriteFrames": true,
+  "inlineSpriteFrames_native": true,
+  "md5Cache": false,
+  "mergeStartScene": false,
+  "optimizeHotUpdate": false,
+  "orientation": {
+    "landscapeLeft": true,
+    "landscapeRight": true,
+    "portrait": false,
+    "upsideDown": false
+  },
+  "packageName": "org.cocos2d.Assembly",
+  "qqplay": {
+    "REMOTE_SERVER_ROOT": "",
+    "orientation": "portrait",
+    "zip": false
+  },
+  "startScene": "8e1fb3c1-feac-4478-9efb-45893ca54b96",
+  "title": "Assembly",
+  "webOrientation": "auto",
+  "wechatgame": {
+    "REMOTE_SERVER_ROOT": "https://coolant.miniant.cn/Assembly",
+    "appid": "wx76968f239ab26a16",
+    "orientation": "portrait",
+    "separate_engine": false,
+    "subContext": ""
+  },
+  "xxteaKey": "f2ffe59c-b661-48",
+  "zipCompressJs": true
+}
