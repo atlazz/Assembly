@@ -50,34 +50,41 @@ export default class GameView extends cc.Component {
     private overScript: OverView;
 
     private state: number;
-    private level: number;
-    private lvlConf;
-    private items;
-    private itemsFrame;
     private selected: string;
     private prevPos: cc.Vec2;
     private prevRot: number;
     private posBeforeMove: cc.Vec2;
     private winBar: cc.ProgressBar;
-    private winStep: number = 0.1;
     private prevProgress: number;
     private winFlag: boolean;
     private isWin: boolean;
 
+    /** load */
+    private level: number;
+    private lvlConf;
+    private items;
+    private itemsFrame;
+    private tipsFrame;
+    private winStep: number = 0.1;
+    private resCnt: number;
+
+    /** preload */
+    public level_preload: number;
     private lvlConf_preload;
     private items_preload;
     private itemsFrame_preload;
     private tipsFrame_preload;
     private winStep_preload: number = 0.1;
+    private resCnt_preload: number;
+
+    public loadLvl: number;
     public preLoadLvl: number;
-    private loadedCnt: number;
+
+    private loadTimeStamp: number; // 资源加载时间戳，用于回调中标识确认
+    public loadTimeStamp_preload: number; // 资源加载时间戳，用于回调中标识确认
 
     private canTouch: boolean = true;
-    // private eventTouch: cc.Event.EventTouch = null;
-    // private touchDist: number = 0.1;
     private touchID: number = null;
-
-    // onLoad () {}
 
     start() {
         // get script
@@ -91,88 +98,37 @@ export default class GameView extends cc.Component {
         this.btn_hint.runAction(cc.sequence(cc.scaleTo(0.5, 1.3), cc.scaleTo(0.5, 1)).repeatForever());
     }
 
-    onEnable() {
-        // switch (this.state) {
-        //     case Const.State.PLAYING:
-        //         this.gameStart();
-        //         break;
-        // }
-    }
-
-    preload(lvlIdx: number) {
-        if (lvlIdx > Global.config.MaxLevel) return;
-
-        this.preLoadLvl = lvlIdx;
-        this.loadedCnt = 0;
-        cc.loader.load(GameView.BaseUrl + 'question/level' + lvlIdx + '/config.json', (err, res) => {
-            if (err) { console.error('load error:', err) };
-            this.lvlConf_preload = res;
-            console.log('preload done. level: ', lvlIdx, this.lvlConf_preload);
-
-            // reset
-            this.items_preload = {};
-            this.itemsFrame_preload = {};
-
-            // solution
-            !this.lvlSelectScript && (this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect));
-            cc.loader.load(GameView.BaseUrl + 'solution/' + this.lvlSelectScript.titleJson[lvlIdx] + '.png', (error, res1) => {
-                if (error) { console.error('load error:', this.lvlSelectScript.titleJson[lvlIdx], error) };
-                this.tipsFrame_preload = new cc.SpriteFrame(res1);
-                (this.preLoadLvl == lvlIdx) && this.loadedCnt++;
-            });
-
-            // question item
-            let urls = [], names = [];
-            Object.keys(this.lvlConf_preload.question).forEach(v => {
-                names.push(v);
-                urls.push(GameView.BaseUrl + 'question/level' + lvlIdx + '/' + v + '.png');
-            });
-            cc.loader.load(urls, (err, assets) => {
-                if (err) { console.error('load error:', lvlIdx, err) };
-                (this.preLoadLvl == lvlIdx) && this.loadedCnt++;
-                // get each item
-                urls.forEach((url, i) => {
-                    let tex: cc.Texture2D = assets.getContent(url);
-                    if (this.lvlConf_preload.question[names[i]]) {
-                        let item = new cc.Node(names[i]);
-                        let sp = item.addComponent(cc.Sprite);
-                        sp.spriteFrame = new cc.SpriteFrame(tex);
-                        this.items_preload[names[i]] = item;
-                        this.itemsFrame_preload[names[i]] = 'question';
-                        // set transform
-                        item.x = this.lvlConf_preload.question[names[i]].posX;
-                        item.y = this.lvlConf_preload.question[names[i]].posY;
-                        item.rotation = (this.lvlConf_preload.question[names[i]].rot + 360) % 360;
-                        item.zIndex = this.lvlConf_preload.question[names[i]].zIndex;
-                        // add listener
-                        this.addItemListener(item);
-                    }
-                })
-                // set win step
-                let len = Object.keys(this.lvlConf_preload.solution).length;
-                let c_n_i = 1, n = len, i = 2;
-                while (i > 0) {
-                    c_n_i *= n / i;
-                    n--;
-                    i--;
-                }
-                this.winStep_preload = Math.max(0.05, 0.8 / (c_n_i * 2 + len));
-            });
-        });
-    }
-
-    gameStart() {
+    startGame(lvlIdx?: number) {
+        lvlIdx && (this.level = lvlIdx);
         if (this.level > Global.config.MaxLevel) {
             console.log('over max level', this.level);
             this.node.active = false;
             this.LvlSelectView.active = true;
             return;
         }
-        console.log('gameStart. currLvl: ', this.level);
+        console.log('gameStart. level: ', this.level);
         // update
         this.lvlLabel.getComponent(cc.Label).string = '第 ' + this.level + ' 关';
         // load
-        this.loadStage();
+        this.loadTimeStamp = Date.now();
+        this.loadStage(this.level, this.loadTimeStamp, false);
+    }
+
+    nextGame() {
+        this.level++;
+        this.startGame();
+    }
+
+    restartGame() {
+        // reset items
+        Object.keys(this.items).forEach(key => {
+            console.log(key, this.lvlConf.question[key])
+            this.items[key].runAction(cc.moveTo(0.2, this.lvlConf.question[key].posX, this.lvlConf.question[key].posY));
+            this.items[key].runAction(cc.rotateTo(0.2, this.lvlConf.question[key].rot));
+        });
+        this.items[this.selected].color = new cc.Color(255, 255, 255);
+        // reset
+        this.reset();
     }
 
     private reset() {
@@ -180,6 +136,7 @@ export default class GameView extends cc.Component {
         !this.winBar && (this.winBar = this.progressBar.getComponent(cc.ProgressBar));
         this.completeIcon.active = false;
         this.title.getComponent(cc.Label).string = this.lvlConf.title;
+        this.title.active = true;
         this.winBar.progress = 0;
         this.selected = null;
         this.btn_restart.active = false;
@@ -190,111 +147,197 @@ export default class GameView extends cc.Component {
         this.canTouch = true;
     }
 
-    private loadStage() {
-        // already loaded
-        if (this.preLoadLvl == this.level && this.loadedCnt >= 2) {
+    // preload(lvlIdx: number) {
+    //     if (lvlIdx > Global.config.MaxLevel || lvlIdx === this.preLoadLvl) return;
+    //     console.log('preload start. level: ', lvlIdx);
+
+    //     this.preLoadLvl = lvlIdx;
+    //     this.resCnt_preload = 0;
+    //     cc.loader.load(GameView.BaseUrl + 'question/level' + lvlIdx + '/config.json', (err, res) => {
+    //         if (err) { console.error('load conf error:', err) };
+    //         this.lvlConf_preload = res;
+    //         console.log('>>> [preload] conf: ', this.lvlConf_preload);
+
+    //         // reset
+    //         this.items_preload = {};
+    //         this.itemsFrame_preload = {};
+
+    //         // solution
+    //         !this.lvlSelectScript && (this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect));
+    //         cc.loader.load(GameView.BaseUrl + 'solution/' + this.lvlSelectScript.titleJson[lvlIdx] + '.png', (error, res1) => {
+    //             if (error) { console.error('preload solution error:', this.lvlSelectScript.titleJson[lvlIdx], error) };
+    //             (this.preLoadLvl == lvlIdx) && this.resCnt_preload++;
+    //             console.log('preload solution done. level: ' + lvlIdx + ' loadedCnt: ' + this.resCnt_preload + '/2');
+    //             this.tipsFrame_preload = new cc.SpriteFrame(res1);
+    //         });
+
+    //         // question item
+    //         let urls = [], names = [];
+    //         Object.keys(this.lvlConf_preload.question).forEach(v => {
+    //             names.push(v);
+    //             urls.push(GameView.BaseUrl + 'question/level' + lvlIdx + '/' + v + '.png');
+    //         });
+    //         console.log('>>> [preload] urls:', urls);
+    //         cc.loader.load(urls, (err, assets) => {
+    //             if (err) { console.error('preload question error:', lvlIdx, err) };
+    //             (this.preLoadLvl == lvlIdx) && this.resCnt_preload++;
+    //             console.log('preload question done. level: ' + lvlIdx + ' loadedCnt: ' + this.resCnt_preload + '/2');
+    //             // get each item
+    //             urls.forEach((url, i) => {
+    //                 let tex: cc.Texture2D = assets.getContent(url);
+    //                 if (this.lvlConf_preload.question[names[i]]) {
+    //                     let item = new cc.Node(names[i]);
+    //                     let sp = item.addComponent(cc.Sprite);
+    //                     sp.spriteFrame = new cc.SpriteFrame(tex);
+    //                     this.items_preload[names[i]] = item;
+    //                     this.itemsFrame_preload[names[i]] = 'question';
+    //                     // set transform
+    //                     item.x = this.lvlConf_preload.question[names[i]].posX;
+    //                     item.y = this.lvlConf_preload.question[names[i]].posY;
+    //                     item.rotation = (this.lvlConf_preload.question[names[i]].rot + 360) % 360;
+    //                     item.zIndex = this.lvlConf_preload.question[names[i]].zIndex;
+    //                     // add listener
+    //                     this.addItemListener(item);
+    //                 }
+    //             })
+    //             // set win step
+    //             let len = Object.keys(this.lvlConf_preload.solution).length;
+    //             this.winStep_preload = 0.9 / (len * len); // (len*(len-1))/(1*2) * 2 + len
+    //         });
+    //     });
+    // }
+
+    loadStage(lvlIdx: number, timeStamp: number, isPreload: boolean = false) {
+        let log_prefix = isPreload ? 'preload' : 'load';
+        let key_suffix = isPreload ? '_preload' : '';
+
+        // [load] already preloaded: assign preload to load
+        if (!isPreload && this.level_preload == lvlIdx && this.resCnt_preload >= 2) {
             console.log('show preload', this.lvlConf_preload);
-
             // level config
-            this.lvlConf = Object.assign({}, this.lvlConf_preload);
-
+            this.lvlConf = this.lvlConf_preload;
+            this.lvlConf_preload = null;
             /** reset */
             this.reset();
-
             // play title animation
             this.title.scale = 2.5;
             this.title.runAction(cc.sequence(cc.scaleTo(0.2, 0.9), cc.scaleTo(0.05, 1.05), cc.scaleTo(0.05, 1)));
 
-            /** set preload */
             // solution
-            this.tips.getComponent(cc.Sprite).spriteFrame = this.tipsFrame_preload;
+            this.tipsFrame = this.tipsFrame_preload;
+            this.tipsFrame_preload = null;
+            this.tips.getComponent(cc.Sprite).spriteFrame = this.tipsFrame.clone();
             !this.overScript && (this.overScript = this.OverView.getComponent(OverView));
-            this.overScript.setFrame(this.tipsFrame_preload);
+            this.overScript.setFrame(this.tipsFrame);
             // question item
-            this.items = Object.assign({}, this.items_preload);
-            this.itemsFrame = Object.assign({}, this.items_preload);
-            Object.keys(this.items_preload).forEach(key => {
-                this.container.addChild(this.items_preload[key]);
+            this.items = this.items_preload;
+            this.items_preload = null;
+            this.itemsFrame = this.itemsFrame_preload;
+            this.itemsFrame_preload = null;
+            Object.keys(this.items).forEach(key => {
+                this.container.addChild(this.items[key]);
             });
             this.winStep = this.winStep_preload;
 
             /** preload next lvl */
-            this.preload(this.level + 1);
+            this.level_preload = lvlIdx + 1;
+            this.loadTimeStamp_preload = Date.now();
+            this.loadStage(this.level_preload, this.loadTimeStamp_preload, true);
 
             return;
         }
 
-        // current level unloaded
-        console.log('load');
-        cc.loader.load(GameView.BaseUrl + 'question/level' + this.level + '/config.json', (err, res) => {
-            if (err) { console.error('load error:', err) };
-            this.lvlConf = res;
-            console.log('level config: ', this.lvlConf);
+        // [load] level lvlIdx unloaded or [preload]
+        console.log(log_prefix + ' start. level: ', lvlIdx);
+        this['resCnt' + key_suffix] = 0;
+        cc.loader.load(GameView.BaseUrl + 'question/level' + lvlIdx + '/config.json', (err, confJson) => {
+            if (err) { console.error(log_prefix + ' conf error:', err) };
+            // 已重新发起加载，前次加载弃用
+            if (timeStamp !== this['loadTimeStamp' + key_suffix]) return;
 
-            // reset
-            this.reset();
+            this['lvlConf' + key_suffix] = confJson;
+            console.log('>>> [' + log_prefix + '] conf: ', this['lvlConf' + key_suffix]);
 
-            // play title animation
-            this.title.scale = 2.5;
-            this.title.runAction(cc.sequence(cc.scaleTo(0.2, 0.9), cc.scaleTo(0.05, 1.05), cc.scaleTo(0.05, 1)));
+            if (!isPreload) {
+                // reset
+                this.reset();
+                // play title animation
+                this.title.scale = 2.5;
+                this.title.runAction(cc.sequence(cc.scaleTo(0.2, 0.9), cc.scaleTo(0.05, 1.05), cc.scaleTo(0.05, 1)));
+            }
 
-            this.items = {};
-            this.itemsFrame = {};
+            this['items' + key_suffix] = {};
+            this['itemsFrame' + key_suffix] = {};
 
             // solution
-            cc.loader.load(GameView.BaseUrl + 'solution/' + this.lvlSelectScript.titleJson[this.level] + '.png', (error, res) => {
-                if (error) { console.error('load error:', this.lvlSelectScript.titleJson[this.level] + '.png', error) };
-                let sp = new cc.SpriteFrame(res);
-                this.tips.getComponent(cc.Sprite).spriteFrame = sp;
-                !this.overScript && (this.overScript = this.OverView.getComponent(OverView));
-                this.overScript.setFrame(sp);
+            !this.lvlSelectScript && (this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect));
+            cc.loader.load(GameView.BaseUrl + 'solution/' + this.lvlSelectScript.titleJson[lvlIdx] + '.png', (error, tex) => {
+                if (error) { console.error(log_prefix + ' solution error:', this.lvlSelectScript.titleJson[lvlIdx], error) };
+                // 已重新发起加载，前次加载弃用
+                if (timeStamp !== this['loadTimeStamp' + key_suffix]) return;
+
+                this['resCnt' + key_suffix]++;
+                console.log(log_prefix + ' solution done. level: ' + lvlIdx + ' loadedCnt: ' + this['resCnt' + key_suffix] + '/2');
+                this['tipsFrame' + key_suffix] = new cc.SpriteFrame(tex);
+                if (!isPreload) {
+                    this.tips.getComponent(cc.Sprite).spriteFrame = this.tipsFrame.clone();
+                    !this.overScript && (this.overScript = this.OverView.getComponent(OverView));
+                    this.overScript.setFrame(this.tipsFrame);
+                }
             });
 
             // question item
             let urls = [], names = [];
-            Object.keys(this.lvlConf.question).forEach(v => {
+            Object.keys(this['lvlConf' + key_suffix].question).forEach(v => {
                 names.push(v);
-                urls.push(GameView.BaseUrl + 'question/level' + this.level + '/' + v + '.png');
+                urls.push(GameView.BaseUrl + 'question/level' + lvlIdx + '/' + v + '.png');
             });
+            console.log('>>> [' + log_prefix + '] urls:', urls);
             cc.loader.load(urls, (err, assets) => {
-                if (err) { console.error('load error:', this.level, err) };
+                if (err) { console.error(log_prefix + ' question error:', lvlIdx, err) };
+                // 已重新发起加载，前次加载弃用
+                if (timeStamp !== this['loadTimeStamp' + key_suffix]) return;
+
+                this['resCnt' + key_suffix]++;
+                console.log(log_prefix + ' question done. level: ' + lvlIdx + ' loadedCnt: ' + this['resCnt' + key_suffix] + '/2');
                 // get each item
                 urls.forEach((url, idx) => {
                     let tex: cc.Texture2D = assets.getContent(url);
-                    if (this.lvlConf.question[names[idx]]) {
-                        let item = new cc.Node(names[idx]);
-                        let sp = item.addComponent(cc.Sprite);
-                        sp.spriteFrame = new cc.SpriteFrame(tex);
-                        this.items[names[idx]] = item;
-                        this.itemsFrame[names[idx]] = 'question';
-                        this.container.addChild(item);
-                        // set transform
-                        item.x = this.lvlConf.question[names[idx]].posX;
-                        item.y = this.lvlConf.question[names[idx]].posY;
-                        item.rotation = (this.lvlConf.question[names[idx]].rot + 360) % 360;
-                        item.zIndex = this.lvlConf.question[names[idx]].zIndex;
-                        // add listener
-                        this.addItemListener(item);
-                    }
+                    // if (this['lvlConf' + key_suffix].question[names[idx]]) {
+                    // create node
+                    let item = new cc.Node(names[idx]);
+                    let sp = item.addComponent(cc.Sprite);
+                    sp.spriteFrame = new cc.SpriteFrame(tex);
+                    this['items' + key_suffix][names[idx]] = item;
+                    this['itemsFrame' + key_suffix][names[idx]] = 'question';
+                    // set transform
+                    item.x = this['lvlConf' + key_suffix].question[names[idx]].posX;
+                    item.y = this['lvlConf' + key_suffix].question[names[idx]].posY;
+                    item.rotation = (this['lvlConf' + key_suffix].question[names[idx]].rot + 360) % 360;
+                    item.zIndex = this['lvlConf' + key_suffix].question[names[idx]].zIndex;
+                    // add listener
+                    this.addItemListener(item);
+                    // add to scene
+                    !isPreload && this.container.addChild(item);
+                    // }
                 });
                 // set win step
-                let len = Object.keys(this.lvlConf.solution).length;
-                let c_n_i = 1, n = len, i = 2;
-                while (i > 0) {
-                    c_n_i *= n / i;
-                    n--;
-                    i--;
-                }
-                this.winStep = Math.max(0.05, 0.8 / (c_n_i * 2 + len));
-            });
+                let len = Object.keys(this['lvlConf' + key_suffix].solution).length;
+                this['winStep' + key_suffix] = 0.9 / (len * len); // (len*(len-1))/(1*2) * 2 + len
 
-            /** preload next lvl */
-            this.preload(this.level + 1);
+                /** preload next lvl */
+                if (!isPreload) {
+                    this.level_preload = lvlIdx + 1;
+                    this.loadTimeStamp_preload = Date.now();
+                    this.loadStage(this.level_preload, this.loadTimeStamp_preload, true);
+                }
+            });
         });
     }
 
     private clearStage() {
         console.log('clearStage');
+        this.title.active = false;
         this.container.removeAllChildren();
     }
 
@@ -303,8 +346,6 @@ export default class GameView extends cc.Component {
         item.on(cc.Node.EventType.TOUCH_START, (e: cc.Event.EventTouch) => {
             // stop
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = e;
             this.touchID == null && (this.touchID = e.getID());
             if (this.touchID != e.getID()) return;
             if (!this.canTouch) return;
@@ -318,8 +359,6 @@ export default class GameView extends cc.Component {
         });
         item.on(cc.Node.EventType.TOUCH_MOVE, (e: cc.Event.EventTouch) => {
             e.stopPropagation();
-            // if (this.eventTouch == null || (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = e;
             if (this.touchID != e.getID()) return;
             if (!this.canTouch) return;
             let currPos: cc.Vec2 = (e.target.parent as cc.Node).convertToNodeSpaceAR(e.getLocation());
@@ -335,8 +374,6 @@ export default class GameView extends cc.Component {
         item.on(cc.Node.EventType.TOUCH_END, (e: cc.Event.EventTouch) => {
             // stop
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = null;
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             if (!this.canTouch) return;
@@ -366,8 +403,6 @@ export default class GameView extends cc.Component {
         item.on(cc.Node.EventType.TOUCH_CANCEL, (e: cc.Event.EventTouch) => {
             // stop
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = null;
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             if (!this.canTouch) return;
@@ -400,13 +435,10 @@ export default class GameView extends cc.Component {
     private addRotListener() {
         this.node.on(cc.Node.EventType.TOUCH_START, (e: cc.Event.EventTouch) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = e;
             this.touchID == null && (this.touchID = e.getID());
             if (this.touchID != e.getID()) return;
             if (!this.canTouch) return;
             if (this.selected && this.items[this.selected]) {
-                // console.log('touch start: ', this.node.name);
                 // set rot
                 let pos = (e.target.parent as cc.Node).convertToNodeSpaceAR(e.getLocation());
                 let deltaX = pos.x - this.items[this.selected].x;
@@ -416,8 +448,6 @@ export default class GameView extends cc.Component {
         });
         this.node.on(cc.Node.EventType.TOUCH_MOVE, (e: cc.Event.EventTouch) => {
             e.stopPropagation();
-            // if (this.eventTouch == null || (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = e;
             if (this.touchID != e.getID()) return;
             if (!this.canTouch) return;
             if (this.selected && this.items[this.selected]) {
@@ -438,8 +468,6 @@ export default class GameView extends cc.Component {
         });
         this.node.on(cc.Node.EventType.TOUCH_END, (e: cc.Event.EventTouch) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = null;
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             if (!this.canTouch) return;
@@ -449,8 +477,6 @@ export default class GameView extends cc.Component {
         });
         this.node.on(cc.Node.EventType.TOUCH_CANCEL, (e: cc.Event.EventTouch) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = null;
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             if (!this.canTouch) return;
@@ -464,78 +490,56 @@ export default class GameView extends cc.Component {
         // btn back
         this.btn_back.on(cc.Node.EventType.TOUCH_START, (e) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = e;
             this.touchID == null && (this.touchID = e.getID());
             if (this.touchID != e.getID()) return;
             this.btn_back.color = new cc.Color(180, 180, 180);
         });
         this.btn_back.on(cc.Node.EventType.TOUCH_CANCEL, (e) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = null;
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             this.btn_back.color = new cc.Color(255, 255, 255);
         });
         this.btn_back.on(cc.Node.EventType.TOUCH_END, (e) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = null;
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             this.btn_back.color = new cc.Color(255, 255, 255);
+            AudioMgr.instance.play('button');
             this.clearStage();
             this.node.active = false;
             this.LvlSelectView.active = true;
-            AudioMgr.instance.play('button');
         });
         // btn restart
         this.btn_restart.on(cc.Node.EventType.TOUCH_START, (e) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = e;
             this.touchID == null && (this.touchID = e.getID());
             if (this.touchID != e.getID()) return;
             this.btn_restart.color = new cc.Color(180, 180, 180);
         });
         this.btn_restart.on(cc.Node.EventType.TOUCH_CANCEL, (e) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = null;
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             this.btn_restart.color = new cc.Color(255, 255, 255);
         });
         this.btn_restart.on(cc.Node.EventType.TOUCH_END, (e) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = null;
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             this.btn_restart.color = new cc.Color(255, 255, 255);
-            // reset items
-            Object.keys(this.items).forEach(key => {
-                console.log(key, this.lvlConf.question[key])
-                this.items[key].runAction(cc.moveTo(0.2, this.lvlConf.question[key].posX, this.lvlConf.question[key].posY));
-                this.items[key].runAction(cc.rotateTo(0.2, this.lvlConf.question[key].rot));
-            });
-            this.items[this.selected].color = new cc.Color(255, 255, 255);
-            // reset
-            this.reset();
             AudioMgr.instance.play('button');
+            this.restartGame();
         });
         // btn hint
         this.btn_hint.on(cc.Node.EventType.TOUCH_START, (e) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = e;
             this.touchID == null && (this.touchID = e.getID());
             if (this.touchID != e.getID()) return;
             let onTouch = () => {
+                AudioMgr.instance.play('hint');
                 this.btn_hint.active = false;
                 this.tips.active = true;
-                AudioMgr.instance.play('hint');
             }
             if (CC_WECHATGAME) {
                 if (Global.config.game_hint == 1 && this.canTouch) {
@@ -574,15 +578,11 @@ export default class GameView extends cc.Component {
         });
         this.btn_hint.on(cc.Node.EventType.TOUCH_CANCEL, (e) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = null;
             if (this.touchID != e.getID()) return;
             this.touchID = null;
         });
         this.btn_hint.on(cc.Node.EventType.TOUCH_END, (e) => {
             e.stopPropagation();
-            // if (this.eventTouch != null && (this.eventTouch.getID() != e.getID() || this.eventTouch.touch != e.touch || (Math.pow(this.eventTouch.getLocationX() - e.getLocationX(), 2) + Math.pow(this.eventTouch.getLocationY() - e.getLocationY(), 2)) > this.touchDist)) return;
-            // this.eventTouch = null;
             if (this.touchID != e.getID()) return;
             this.touchID = null;
         });
@@ -653,10 +653,10 @@ export default class GameView extends cc.Component {
                 this.winFlag = false;
             }
         });
-        winCnt > 1 && (winCnt = 1);
+        winCnt >= 1 && (winCnt = 0.9);
         winCnt < 0 && (winCnt = 0);
         this.winBar.progress = this.winFlag ? 1 : winCnt;
-        this.winBar.progress == 1 ? (this.completeIcon.active = true) : (this.completeIcon.active = false);
+        this.completeIcon.active = this.winBar.progress == 1 ? true : false;
     }
 
     // check pos and angle for two items, return value: 0, 1, 2
@@ -667,10 +667,8 @@ export default class GameView extends cc.Component {
         let deltaRot = ((this.items[key2].rotation - this.items[key1].rotation) + 720) % 360;
         // a. angle type null: 无指向性, 仅判断距离
         if (rot1 == null) {
-            let dist = Math.sqrt(Math.pow(this.items[key1].x - this.items[key2].x, 2) + Math.pow(this.items[key1].y - this.items[key2].y, 2));
-            if (dist < Const.WinDeltaDist) {
-                cnt += 2;
-            }
+            cnt++;
+            this.checkPos(key1, key2, rot1) && cnt++;
         }
         // b. angle1 type number: conver to node space: 参照item1局部坐标系标记item2位置
         else if (typeof rot1 == 'number') {
@@ -696,7 +694,7 @@ export default class GameView extends cc.Component {
         // c. angle1 type Array<number>: conver to node space: 参照item1局部坐标系标记item2位置
         else {
             let flag_pos = true, flag_rot = true;
-            for (let i = 0; i < rot1.length && (flag_pos || flag_rot); i++) {
+            for (let i = 0; (flag_pos || flag_rot) && i < rot1.length; i++) {
                 /** check pos */
                 if (flag_pos) {
                     if (this.checkPos(key1, key2, rot1[i])) {
@@ -707,6 +705,7 @@ export default class GameView extends cc.Component {
                 /** check rot */
                 if (flag_rot) {
                     if (rot2 == null) {
+                        flag_rot = false;
                         cnt++;
                     }
                     else if (typeof rot2 == 'number') {
@@ -715,7 +714,7 @@ export default class GameView extends cc.Component {
                             cnt++;
                         }
                     } else {
-                        for (let j = 0; j < rot2.length && flag_rot; j++) {
+                        for (let j = 0; flag_rot && j < rot2.length; j++) {
                             if (this.checkRot(rot1[i], rot2[j], deltaRot)) {
                                 flag_rot = false;
                                 cnt++;
@@ -729,28 +728,34 @@ export default class GameView extends cc.Component {
     }
 
     private checkPos(key1, key2, rot1): boolean {
-        // convert item2 to item1 space
-        let sin = Math.sin(this.items[key1].rotation * Math.PI / 180);
-        let cos = Math.cos(this.items[key1].rotation * Math.PI / 180);
+        let dist;
         let pos1 = this.items[key1].convertToWorldSpaceAR(new cc.Vec2(0, 0));
         let pos2 = this.items[key2].convertToWorldSpaceAR(new cc.Vec2(0, 0));
-        let tmpX = pos2.x - pos1.x;
-        let tmpY = pos2.y - pos1.y;
-        let x1 = cos * tmpX - sin * tmpY;
-        let y1 = sin * tmpX + cos * tmpY;
-        // convert answer_item2 to answer_item1 space
-        sin = Math.sin(rot1 * Math.PI / 180);
-        cos = Math.cos(rot1 * Math.PI / 180);
-        tmpX = this.lvlConf.solution[key2].posX - this.lvlConf.solution[key1].posX;
-        tmpY = this.lvlConf.solution[key2].posY - this.lvlConf.solution[key1].posY;
-        let x2 = cos * tmpX - sin * tmpY;
-        let y2 = sin * tmpX + cos * tmpY;
-        // check
-        let dist = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-        if (dist < Const.WinDeltaDist) {
-            return true;
+        let vecX = pos2.x - pos1.x;
+        let vecY = pos2.y - pos1.y;
+        let vecX_conf = this.lvlConf.solution[key2].posX - this.lvlConf.solution[key1].posX;
+        let vecY_conf = this.lvlConf.solution[key2].posY - this.lvlConf.solution[key1].posY;
+        // 角度360度有效，无指向性
+        if (rot1 == null) {
+            let dist1 = Math.sqrt(vecX * vecX + vecY * vecY);
+            let dist2 = Math.sqrt(vecX_conf * vecX_conf + vecY_conf * vecY_conf);
+            dist = Math.abs(dist1 - dist2);
+        } else {
+            // convert item2 to item1 space
+            let sin = Math.sin(this.items[key1].rotation * Math.PI / 180);
+            let cos = Math.cos(this.items[key1].rotation * Math.PI / 180);
+            let x1 = cos * vecX - sin * vecY;
+            let y1 = sin * vecX + cos * vecY;
+            // convert answer_item2 to answer_item1 space
+            sin = Math.sin(rot1 * Math.PI / 180);
+            cos = Math.cos(rot1 * Math.PI / 180);
+            let x2 = cos * vecX_conf - sin * vecY_conf;
+            let y2 = sin * vecX_conf + cos * vecY_conf;
+            // calc dist
+            dist = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
         }
-        return false;
+        // check
+        return dist < Const.WinDeltaDist
     }
 
     private checkRot(rot1, rot2, deltaRot): boolean {
@@ -792,7 +797,7 @@ export default class GameView extends cc.Component {
             this.schedule(() => AudioMgr.instance.play('win'), 0.15, 0);
             // show win animation
             this.flash.active = true;
-            this.schedule(() => { this.flash.rotation += 1.5 }, 0.03, 60);
+            this.schedule(() => { this.flash.rotation += 1.5 }, 0.03, 100);
             // show overView
             let showNext: Function = () => {
                 // clear
@@ -802,22 +807,14 @@ export default class GameView extends cc.Component {
                 // this.node.active = false;
                 this.OverView.active = true;
             };
-            this.scheduleOnce(showNext, 2);
+            this.scheduleOnce(showNext, 3);
             // post score
-            ws.postGameScore({
+            CC_WECHATGAME && ws.postGameScore({
                 key: 'clearStage',
                 id: Date.now() + "",
                 score: Global.gameData.level,
             })
         }
-    }
-
-    setLevel(idx: number) {
-        this.level = idx;
-    }
-
-    addLevel() {
-        this.level++;
     }
 
     setState(state: number) {

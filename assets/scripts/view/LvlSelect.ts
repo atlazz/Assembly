@@ -40,6 +40,11 @@ export default class lvlSelect extends cc.Component {
     private iconList: cc.SpriteFrame[] = [];
     private lockList: cc.SpriteFrame[] = [];
 
+    onEnable() {
+        // update label
+        this.lvlLabel.getComponent(cc.Label).string = (Global.gameData.level - 1).toString();
+    }
+
     init() {
         if (this.iconList.length != 0) return;
 
@@ -185,53 +190,53 @@ export default class lvlSelect extends cc.Component {
         this.addBtnListener();
     }
 
-    // update list by level idx: start to end
-    updateList(start: number, end?: number) {
-        // update label
-        this.lvlLabel.getComponent(cc.Label).string = (Global.gameData.level - 1).toString();
-        // update list item
-        !end && (end = start);
-        end < 1 && (end = 1);
-        end > Global.config.MaxShowLevel && (end = Global.config.MaxShowLevel);
-        while (start <= end) {
-            let item: cc.Node = this.content.getChildByName('item' + start);
-            let icon: cc.Node = item.getChildByName('icon');
-            let lock: cc.Node = item.getChildByName('lock');
-            let mask: cc.Node = item.getChildByName('mask');
-            if (start < Global.gameData.level) {
-                icon.active = true;
-                icon.getComponent(cc.Sprite).spriteFrame = this.iconList[0];
-                lock.active = false;
-                mask.active = false;
-                // set content
-                let solution: cc.Node = item.getChildByName('solution');
-                if (solution) {
-                    solution.active = true;
-                } else {
-                    solution = new cc.Node('solution');
-                    item.addChild(solution);
-                    solution.addComponent(cc.Sprite);
-                    solution.y = -5;
-                    cc.loader.load(GameView.BaseUrl + 'solution/' + this.titleJson[start] + '.png', (err, res) => {
-                        solution.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(res);
-                        solution.scale = 0.48;
-                    });
-                }
-            } else if (start == Global.gameData.level && start <= Global.config.MaxLevel) {
-                icon.active = true;
-                icon.getComponent(cc.Sprite).spriteFrame = this.iconList[1];
-                lock.active = true;
-                lock.getComponent(cc.Sprite).spriteFrame = this.lockList[0];
-                mask.active = false;
-            } else {
-                icon.active = false;
-                lock.active = true;
-                lock.getComponent(cc.Sprite).spriteFrame = this.lockList[1];
-                mask.active = true;
-            }
-            start++;
-        }
-    }
+    // // update list by level idx: start to end
+    // updateList(start: number, end?: number) {
+    //     // update label
+    //     this.lvlLabel.getComponent(cc.Label).string = (Global.gameData.level - 1).toString();
+    //     // update list item
+    //     !end && (end = start);
+    //     end < 1 && (end = 1);
+    //     end > Global.config.MaxShowLevel && (end = Global.config.MaxShowLevel);
+    //     while (start <= end) {
+    //         let item: cc.Node = this.content.getChildByName('item' + start);
+    //         let icon: cc.Node = item.getChildByName('icon');
+    //         let lock: cc.Node = item.getChildByName('lock');
+    //         let mask: cc.Node = item.getChildByName('mask');
+    //         if (start < Global.gameData.level) {
+    //             icon.active = true;
+    //             icon.getComponent(cc.Sprite).spriteFrame = this.iconList[0];
+    //             lock.active = false;
+    //             mask.active = false;
+    //             // set content
+    //             let solution: cc.Node = item.getChildByName('solution');
+    //             if (solution) {
+    //                 solution.active = true;
+    //             } else {
+    //                 solution = new cc.Node('solution');
+    //                 item.addChild(solution);
+    //                 solution.addComponent(cc.Sprite);
+    //                 solution.y = -5;
+    //                 cc.loader.load(GameView.BaseUrl + 'solution/' + this.titleJson[start] + '.png', (err, res) => {
+    //                     solution.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(res);
+    //                     solution.scale = 0.48;
+    //                 });
+    //             }
+    //         } else if (start == Global.gameData.level && start <= Global.config.MaxLevel) {
+    //             icon.active = true;
+    //             icon.getComponent(cc.Sprite).spriteFrame = this.iconList[1];
+    //             lock.active = true;
+    //             lock.getComponent(cc.Sprite).spriteFrame = this.lockList[0];
+    //             mask.active = false;
+    //         } else {
+    //             icon.active = false;
+    //             lock.active = true;
+    //             lock.getComponent(cc.Sprite).spriteFrame = this.lockList[1];
+    //             mask.active = true;
+    //         }
+    //         start++;
+    //     }
+    // }
 
     private addItemListener(item: cc.Node, idx: number) {
         // off
@@ -248,11 +253,9 @@ export default class lvlSelect extends cc.Component {
             AudioMgr.instance.play('button');
             item.color = new cc.Color(255, 255, 255);
             if (idx <= Global.gameData.level) {
-                this.gameScript.setLevel(idx);
-                this.gameScript.setState(Const.State.PLAYING);
+                this.gameScript.startGame(idx);
                 this.node.active = false;
                 this.GameView.active = true;
-                this.gameScript.gameStart();
             }
         }, item);
     }

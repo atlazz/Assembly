@@ -19,8 +19,7 @@ export default class HomeView extends cc.Component {
     private gameScript: GameView;
     private lvlSelectScript: LvlSelect;
 
-    private isLogined: boolean = false;
-    private isLoaded: boolean = false;
+    private initCnt: number = 0;
     private hasAddlistener: boolean = false;
 
     private touchTarget;
@@ -30,11 +29,13 @@ export default class HomeView extends cc.Component {
         if (CC_WECHATGAME) {
             Loading.initWeixin(() => {
                 console.log('login succeed.');
-                this.isLogined = true;
+                this.initCnt++;
+                this.initCnt >= 2 && this.onInitComplete();
             });
         } else {
-            this.isLogined = true;
             GameView.BaseUrl = 'https://coolant.oss-cn-shenzhen.aliyuncs.com/Assembly/textures/game/';
+            this.initCnt++;
+            this.initCnt >= 2 && this.onInitComplete();
         }
 
         // init LvlSelect
@@ -44,12 +45,9 @@ export default class HomeView extends cc.Component {
         cc.loader.load(GameView.BaseUrl + 'solution/title.json', (error, jsonData) => {
             if (error) { console.error('load title json error:', error) };
             this.lvlSelectScript.titleJson = jsonData;
-            this.isLoaded = true;
             console.log('title json loaded.', this.lvlSelectScript.titleJson);
-
-            // preload GameView level
-            this.gameScript = this.GameView.getComponent(GameView);
-            this.gameScript.preload(Global.gameData.level);
+            this.initCnt++;
+            this.initCnt >= 2 && this.onInitComplete();
         });
     }
 
@@ -69,20 +67,25 @@ export default class HomeView extends cc.Component {
             if (this.touchTarget && this.touchTarget != e.target) return;
             this.touchTarget = null;
             this.btn_start.color = new cc.Color(255, 255, 255);
-            this.gameScript.setLevel(Global.gameData.level);
-            this.gameScript.setState(Const.State.PLAYING);
+            AudioMgr.instance.play('button');
+            this.gameScript.startGame(Global.gameData.level);
             this.node.active = false;
             this.GameView.active = true;
-            this.gameScript.gameStart();
-            AudioMgr.instance.play('button');
         });
     }
 
-    update(dt) {
-        if (!this.hasAddlistener && this.isLogined && this.isLoaded) {
-            this.lvlSelectScript.init();
-            this.addBtnListener();
-            this.hasAddlistener = true;
-        }
+    onInitComplete() {
+        // preload level
+        this.gameScript = this.GameView.getComponent(GameView);
+        // this.gameScript.preload(Global.gameData.level);
+        this.gameScript.level_preload = Global.gameData.level;
+        this.gameScript.loadTimeStamp_preload = Date.now();
+        this.gameScript.loadStage(this.gameScript.level_preload, this.gameScript.loadTimeStamp_preload, true);
+        // init lvlSelect
+        this.lvlSelectScript.init();
+        // add listener
+        this.addBtnListener();
     }
+
+    // update(dt) {}
 }

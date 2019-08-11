@@ -24,6 +24,10 @@ export default class OverView extends cc.Component {
     tips: cc.Node = null;
 
     @property(cc.Node)
+    title: cc.Node = null;
+    @property(cc.Node)
+    titleBg: cc.Node = null;
+    @property(cc.Node)
     center: cc.Node = null;
     @property(cc.Node)
     left: cc.Node = null;
@@ -54,7 +58,25 @@ export default class OverView extends cc.Component {
         // update label
         this.lvlLabel.getComponent(cc.Label).string = (Global.gameData.level - 1).toString();
 
+        // reset
+        AudioMgr.instance.closeAll();
+        this.btn_next.active = false;
+        this.btn_back.active = false;
+        this.title.active = false;
+        this.titleBg.active = false;
+        this.tips.active = false;
         // play win animation
+        this.schedule(this.playEff, 0.4, 0);
+    }
+
+    playEff() {
+        // play sound
+        this.schedule(() => AudioMgr.instance.play('starin'), 0.1, 0);
+        // play win animation
+        this.tips.active = true;
+        this.tips.scale = 1;
+        this.tips.runAction(cc.sequence(cc.scaleTo(0.1, 1.2), cc.scaleTo(0.2, 0.85)));
+        this.title.active = true;
         this.center.scaleX = 0;
         this.center.runAction(cc.sequence(cc.scaleTo(0.2, 1.2), cc.scaleTo(0.05, 1)));
         this.label.scaleX = 0;
@@ -67,7 +89,7 @@ export default class OverView extends cc.Component {
         this.leftLeaf.active = false;
         this.rightLeaf.active = false;
         this.schedule(() => {
-            AudioMgr.instance.play('starin');
+            this.titleBg.active = true;
             this.crown.active = true;
             this.crown.y = 40;
             this.crown.runAction(cc.sequence(cc.moveTo(0.1, 0, 110), cc.moveTo(0.05, 0, 105), cc.moveTo(0.15, 0, 70), cc.moveTo(0.05, 0, 85), cc.moveTo(0.05, 0, 80)));
@@ -90,8 +112,13 @@ export default class OverView extends cc.Component {
                 this.rightLeaf.x = 50;
                 this.rightLeaf.y = 40;
                 this.rightLeaf.runAction(cc.sequence(cc.moveTo(0.1, 78, 80), cc.moveTo(0.05, 82, 73)));
+                // show btn
+                this.schedule(() => {
+                    this.btn_next.active = true;
+                    this.btn_back.active = true;
+                }, 0, 0, 0.8);
             }, 0, 0, 0.3);
-        }, 0, 0, 0.4);
+        }, 0, 0, 0.3);
     }
 
     setFrame(frame: cc.SpriteFrame) {
@@ -115,11 +142,11 @@ export default class OverView extends cc.Component {
             if (this.touchTarget && this.touchTarget != e.target) return;
             this.touchTarget = null;
             this.btn_next.color = new cc.Color(255, 255, 255);
-            this.gameScript.addLevel();
-            this.gameScript.setState(Const.State.PLAYING);
-            this.node.active = false;
-            this.gameScript.gameStart();
             AudioMgr.instance.play('button');
+            this.gameScript.nextGame();
+            this.node.active = false;
+            this.btn_next.active = false;
+            this.btn_back.active = false;
         });
         // btn back
         this.btn_back.on(cc.Node.EventType.TOUCH_START, (e) => {
@@ -136,10 +163,12 @@ export default class OverView extends cc.Component {
             if (this.touchTarget && this.touchTarget != e.target) return;
             this.touchTarget = null;
             this.btn_back.color = new cc.Color(255, 255, 255);
+            AudioMgr.instance.play('button');
             this.node.active = false;
             this.GameView.active = false;
+            this.btn_next.active = false;
+            this.btn_back.active = false;
             this.LvlSelectView.active = true;
-            AudioMgr.instance.play('button');
         });
     }
 

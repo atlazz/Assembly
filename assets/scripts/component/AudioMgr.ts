@@ -33,5 +33,9 @@ export default class AudioMgr extends cc.Component {
         }
     }
 
+    closeAll() {
+        cc.audioEngine.stopAllEffects();
+    }
+
     // update (dt) {}
 }
