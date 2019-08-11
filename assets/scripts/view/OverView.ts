@@ -64,7 +64,10 @@ export default class OverView extends cc.Component {
         this.btn_back.active = false;
         this.title.active = false;
         this.titleBg.active = false;
-        this.tips.active = false;
+        // 完成图动效
+        this.tips.active = true;
+        this.tips.scale = 1;
+        this.tips.runAction(cc.sequence(cc.scaleTo(0.1, 1.2), cc.scaleTo(0.2, 0.85)));
         // play win animation
         this.schedule(this.playEff, 0.4, 0);
     }
@@ -73,9 +76,6 @@ export default class OverView extends cc.Component {
         // play sound
         this.schedule(() => AudioMgr.instance.play('starin'), 0.1, 0);
         // play win animation
-        this.tips.active = true;
-        this.tips.scale = 1;
-        this.tips.runAction(cc.sequence(cc.scaleTo(0.1, 1.2), cc.scaleTo(0.2, 0.85)));
         this.title.active = true;
         this.center.scaleX = 0;
         this.center.runAction(cc.sequence(cc.scaleTo(0.2, 1.2), cc.scaleTo(0.05, 1)));

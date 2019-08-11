@@ -4,6 +4,7 @@ import LvlSelect from "./LvlSelect";
 import OverView from "./OverView";
 import ScrollViewBetter from "../component/ScrollViewBetter";
 import AudioMgr from "../component/AudioMgr";
+import wx from "../SDK/wx";
 import ws from "../SDK/ws";
 import Loading from "../component/Loading";
 import Reward from "../component/Reward";
@@ -135,8 +136,6 @@ export default class GameView extends cc.Component {
         this.isWin = false;
         !this.winBar && (this.winBar = this.progressBar.getComponent(cc.ProgressBar));
         this.completeIcon.active = false;
-        this.title.getComponent(cc.Label).string = this.lvlConf.title;
-        this.title.active = true;
         this.winBar.progress = 0;
         this.selected = null;
         this.btn_restart.active = false;
@@ -207,9 +206,19 @@ export default class GameView extends cc.Component {
     //     });
     // }
 
+    private showNetErr() {
+        CC_WECHATGAME && wx.showToast && wx.showToast({
+            title: '请检查网络',
+            icon: 'fail',
+        })
+    }
+
     loadStage(lvlIdx: number, timeStamp: number, isPreload: boolean = false) {
         let log_prefix = isPreload ? 'preload' : 'load';
         let key_suffix = isPreload ? '_preload' : '';
+
+        // reset
+        this.reset();
 
         // [load] already preloaded: assign preload to load
         if (!isPreload && this.level_preload == lvlIdx && this.resCnt_preload >= 2) {
@@ -217,8 +226,8 @@ export default class GameView extends cc.Component {
             // level config
             this.lvlConf = this.lvlConf_preload;
             this.lvlConf_preload = null;
-            /** reset */
-            this.reset();
+            this.title.getComponent(cc.Label).string = this.lvlConf.title;
+            this.title.active = true;
             // play title animation
             this.title.scale = 2.5;
             this.title.runAction(cc.sequence(cc.scaleTo(0.2, 0.9), cc.scaleTo(0.05, 1.05), cc.scaleTo(0.05, 1)));
@@ -248,10 +257,18 @@ export default class GameView extends cc.Component {
         }
 
         // [load] level lvlIdx unloaded or [preload]
+        !isPreload && CC_WECHATGAME && wx.showLoading && wx.showLoading({ title: '加载中' });
         console.log(log_prefix + ' start. level: ', lvlIdx);
         this['resCnt' + key_suffix] = 0;
         cc.loader.load(GameView.BaseUrl + 'question/level' + lvlIdx + '/config.json', (err, confJson) => {
-            if (err) { console.error(log_prefix + ' conf error:', err) };
+            if (err) {
+                console.error(log_prefix + ' conf error:', err);
+                if (!isPreload && CC_WECHATGAME) {
+                    wx.hideLoading && wx.hideLoading();
+                    this.showNetErr();
+                    return;
+                }
+            };
             // 已重新发起加载，前次加载弃用
             if (timeStamp !== this['loadTimeStamp' + key_suffix]) return;
 
@@ -259,8 +276,8 @@ export default class GameView extends cc.Component {
             console.log('>>> [' + log_prefix + '] conf: ', this['lvlConf' + key_suffix]);
 
             if (!isPreload) {
-                // reset
-                this.reset();
+                this.title.getComponent(cc.Label).string = this.lvlConf.title;
+                this.title.active = true;
                 // play title animation
                 this.title.scale = 2.5;
                 this.title.runAction(cc.sequence(cc.scaleTo(0.2, 0.9), cc.scaleTo(0.05, 1.05), cc.scaleTo(0.05, 1)));
@@ -272,7 +289,14 @@ export default class GameView extends cc.Component {
             // solution
             !this.lvlSelectScript && (this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect));
             cc.loader.load(GameView.BaseUrl + 'solution/' + this.lvlSelectScript.titleJson[lvlIdx] + '.png', (error, tex) => {
-                if (error) { console.error(log_prefix + ' solution error:', this.lvlSelectScript.titleJson[lvlIdx], error) };
+                if (error) {
+                    console.error(log_prefix + ' solution error:', this.lvlSelectScript.titleJson[lvlIdx], error);
+                    if (!isPreload && CC_WECHATGAME) {
+                        wx.hideLoading && wx.hideLoading();
+                        this.showNetErr();
+                        return;
+                    }
+                };
                 // 已重新发起加载，前次加载弃用
                 if (timeStamp !== this['loadTimeStamp' + key_suffix]) return;
 
@@ -293,10 +317,19 @@ export default class GameView extends cc.Component {
                 urls.push(GameView.BaseUrl + 'question/level' + lvlIdx + '/' + v + '.png');
             });
             console.log('>>> [' + log_prefix + '] urls:', urls);
-            cc.loader.load(urls, (err, assets) => {
-                if (err) { console.error(log_prefix + ' question error:', lvlIdx, err) };
+            cc.loader.load(urls, (err2, assets) => {
+                if (err2) {
+                    console.error(log_prefix + ' question error:', lvlIdx, err2);
+                    if (!isPreload && CC_WECHATGAME) {
+                        wx.hideLoading && wx.hideLoading();
+                        this.showNetErr();
+                        return;
+                    }
+                };
                 // 已重新发起加载，前次加载弃用
                 if (timeStamp !== this['loadTimeStamp' + key_suffix]) return;
+                // 加载完成
+                !isPreload && CC_WECHATGAME && wx.hideLoading && wx.hideLoading();
 
                 this['resCnt' + key_suffix]++;
                 console.log(log_prefix + ' question done. level: ' + lvlIdx + ' loadedCnt: ' + this['resCnt' + key_suffix] + '/2');
@@ -794,7 +827,7 @@ export default class GameView extends cc.Component {
                 this.LvlSelectView.getChildByName('scrollView').getComponent(ScrollViewBetter).updateItemsContent();
             }
             // play sound
-            this.schedule(() => AudioMgr.instance.play('win'), 0.15, 0);
+            this.schedule(() => AudioMgr.instance.play('win'), 0.05, 0);
             // show win animation
             this.flash.active = true;
             this.schedule(() => { this.flash.rotation += 1.5 }, 0.03, 100);
@@ -807,7 +840,7 @@ export default class GameView extends cc.Component {
                 // this.node.active = false;
                 this.OverView.active = true;
             };
-            this.scheduleOnce(showNext, 3);
+            this.scheduleOnce(showNext, 2.5);
             // post score
             CC_WECHATGAME && ws.postGameScore({
                 key: 'clearStage',
