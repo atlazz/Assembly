@@ -404,7 +404,7 @@ export default class GameView extends cc.Component {
             this.tipsFrame_preload = null;
             this.tips.getComponent(cc.Sprite).spriteFrame = this.tipsFrame.clone();
             !this.overScript && (this.overScript = this.OverView.getComponent(OverView));
-            this.overScript.setFrame(this.tipsFrame);
+            this.overScript.setFrame(lvlIdx);
             // question item
             this.items = this.items_preload;
             this.items_preload = null;
@@ -476,7 +476,7 @@ export default class GameView extends cc.Component {
                 if (!isPreload) {
                     this.tips.getComponent(cc.Sprite).spriteFrame = this.tipsFrame.clone();
                     !this.overScript && (this.overScript = this.OverView.getComponent(OverView));
-                    this.overScript.setFrame(this.tipsFrame);
+                    this.overScript.setFrame(lvlIdx);
                 }
             });
 
@@ -981,7 +981,6 @@ export default class GameView extends cc.Component {
             this.canTouch = false;
             // play win animation
             Object.keys(this.lvlConf.solution).forEach(key => {
-                console.log(key, this.items[key].getPosition(), this.lvlConf.solution[key].posX, this.lvlConf.solution[key].posY)
                 this.items[key].runAction(cc.moveTo(0.2, this.lvlConf.solution[key].posX, this.lvlConf.solution[key].posY));
                 if (this.lvlConf.solution[key].rot != null) {
                     typeof (this.lvlConf.solution[key].rot) == 'number' ? this.items[key].runAction(cc.rotateTo(0.2, this.lvlConf.solution[key].rot)) : this.items[key].runAction(cc.rotateTo(0.2, this.lvlConf.solution[key].rot[0]));

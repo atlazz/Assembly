@@ -1,6 +1,7 @@
 import Global from "../Global";
 import * as Const from "../Const";
 import GameView from "./GameView"
+import LvlSelect from "./LvlSelect";
 import AudioMgr from "../component/AudioMgr";
 
 const { ccclass, property } = cc._decorator;
@@ -43,6 +44,7 @@ export default class OverView extends cc.Component {
     label: cc.Node = null;
 
     private gameScript: GameView;
+    private lvlSelectScript: LvlSelect;
 
     private touchTarget;
 
@@ -121,9 +123,12 @@ export default class OverView extends cc.Component {
         }, 0, 0, 0.3);
     }
 
-    setFrame(frame: cc.SpriteFrame) {
-        this.tips.getComponent(cc.Sprite).spriteFrame = frame.clone();
-        this.tips.scale = 0.85;
+    setFrame(lvlIdx: number) {
+        !this.lvlSelectScript && (this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect));
+        cc.loader.load(GameView.BaseUrl + 'solution/' + this.lvlSelectScript.titleJson[lvlIdx] + '.png', (error, tex) => {
+            this.tips.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(tex);
+            this.tips.scale = 0.85;
+        });
     }
 
     addBtnListener() {
