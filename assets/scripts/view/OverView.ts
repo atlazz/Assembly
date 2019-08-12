@@ -169,6 +169,7 @@ export default class OverView extends cc.Component {
             this.btn_next.active = false;
             this.btn_back.active = false;
             this.LvlSelectView.active = true;
+            this.unscheduleAllCallbacks();
         });
     }
 

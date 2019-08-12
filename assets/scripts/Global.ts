@@ -24,7 +24,7 @@ let Global = {
         share_first: false, //是否转发优先
         share_number: 5, //优先转发情况下，最多转发次数，如果超过视频次数，仍会继续转发
         video_number: 6, //视频观看次数
-        share_time: 30, //转发冷却时间
+        share_time: 5, //转发冷却时间
         banner_time: 180, //banner切换时间
         share_delay: 4,
         online: true,//是否线上版本

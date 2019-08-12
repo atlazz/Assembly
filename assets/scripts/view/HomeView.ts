@@ -78,9 +78,11 @@ export default class HomeView extends cc.Component {
         // preload level
         this.gameScript = this.GameView.getComponent(GameView);
         // this.gameScript.preload(Global.gameData.level);
-        this.gameScript.level_preload = Global.gameData.level;
-        this.gameScript.loadTimeStamp_preload = Date.now();
-        this.gameScript.loadStage(this.gameScript.level_preload, this.gameScript.loadTimeStamp_preload, true);
+        if (Global.gameData.level <= Global.config.MaxLevel) {
+            this.gameScript.level_preload = Global.gameData.level;
+            this.gameScript.loadTimeStamp_preload = Date.now();
+            this.gameScript.loadStage(this.gameScript.level_preload, this.gameScript.loadTimeStamp_preload, true);
+        }
         // init lvlSelect
         this.lvlSelectScript.init();
         // add listener

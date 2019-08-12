@@ -37,6 +37,22 @@ export default class GameView extends cc.Component {
     completeIcon: cc.Node = null;
     @property(cc.Node)
     flash: cc.Node = null;
+    @property(cc.Node)
+    mask1: cc.Node = null;
+    @property(cc.Node)
+    mask2: cc.Node = null;
+    @property(cc.Node)
+    line_left: cc.Node = null;
+    @property(cc.Node)
+    line_right: cc.Node = null;
+    @property(cc.Node)
+    line_left2: cc.Node = null;
+    @property(cc.Node)
+    line_right2: cc.Node = null;
+    @property(cc.Node)
+    line_rotate: cc.Node = null;
+    @property(cc.Node)
+    finger: cc.Node = null;
 
     @property(cc.Node)
     HomeView: cc.Node = null;
@@ -117,19 +133,28 @@ export default class GameView extends cc.Component {
 
     nextGame() {
         this.level++;
+        if (this.level > Global.config.MaxLevel) {
+            console.log('over max level', this.level);
+            this.node.active = false;
+            this.LvlSelectView.active = true;
+            return;
+        }
         this.startGame();
     }
 
     restartGame() {
         // reset items
         Object.keys(this.items).forEach(key => {
-            console.log(key, this.lvlConf.question[key])
             this.items[key].runAction(cc.moveTo(0.2, this.lvlConf.question[key].posX, this.lvlConf.question[key].posY));
             this.items[key].runAction(cc.rotateTo(0.2, this.lvlConf.question[key].rot));
         });
-        this.items[this.selected].color = new cc.Color(255, 255, 255);
+        this.selected && (this.items[this.selected].color = new cc.Color(255, 255, 255));
         // reset
         this.reset();
+        if (Const.TutorialLvl.indexOf(this.level) >= 0) {
+            // show tutorial
+            this.schedule(() => { this.showTutorial(this.level) }, 0.21, 0);
+        }
     }
 
     private reset() {
@@ -213,9 +238,151 @@ export default class GameView extends cc.Component {
         })
     }
 
+    private hideTutorial() {
+        this.mask1.active = false;
+        this.mask2.active = false;
+        this.line_left.active = false;
+        this.line_right.active = false;
+        this.line_rotate.active = false;
+        this.finger.active = false;
+        this.finger.stopAllActions();
+        this.unscheduleAllCallbacks();
+    }
+
+    private showTutorial(lvlIdx: number) {
+        this.hideTutorial();
+        switch (lvlIdx) {
+            case 1:
+                this.mask1.active = true;
+                let item = this.container.getChildByName('3');
+                this.line_left.active = true;
+                this.line_left.x = item.x;
+                this.line_left.y = item.y;
+                // finger animation
+                this.finger.active = true;
+                let srcPos1 = item.getPosition().clone();
+                let dstPos1 = new cc.Vec2(this.lvlConf.solution['3'].posX, this.lvlConf.solution['3'].posY);
+                let tmpPos1 = new cc.Vec2((this.lvlConf.solution['3'].posX - item.x) / 2 - 200, (this.lvlConf.solution['3'].posY - item.y) / 3);
+                this.finger.setPosition(srcPos1);
+                let play1 = () => {
+                    this.finger.setPosition(srcPos1);
+                    this.finger.runAction(cc.bezierTo(0.5, [srcPos1, tmpPos1, dstPos1]));
+                }
+                this.schedule(play1, 1, cc.macro.REPEAT_FOREVER, 0);
+                // add listener
+                item && this.addItemListener(item, () => {
+                    this.setSelectFramePos();
+                    this.updateProgress();
+                    item.color = new cc.Color(255, 255, 255);
+                    item.off(cc.Node.EventType.TOUCH_START), item.off(cc.Node.EventType.TOUCH_MOVE), item.off(cc.Node.EventType.TOUCH_CANCEL), item.off(cc.Node.EventType.TOUCH_END);
+                    this.selected = null;
+                    item.runAction(cc.moveTo(0.2, this.lvlConf.solution['3'].posX, this.lvlConf.solution['3'].posY));
+                    this.schedule(() => {
+                        this.line_left.active = false;
+                        this.finger.stopAllActions();
+                        this.unscheduleAllCallbacks();
+                        // this.unschedule(play1);
+                        let item2 = this.container.getChildByName('1');
+                        item2 && this.addItemListener(item2);
+                        this.line_right.active = true;
+                        this.line_right.x = item2.x;
+                        this.line_right.y = item2.y;
+                        // finger animation
+                        let srcPos2 = item2.getPosition().clone();
+                        let dstPos2 = new cc.Vec2(this.lvlConf.solution['1'].posX, this.lvlConf.solution['1'].posY);
+                        let tmpPos2 = new cc.Vec2((this.lvlConf.solution['1'].posX - item2.x) / 2 + 300, (this.lvlConf.solution['1'].posY - item2.y) / 3);
+                        this.finger.setPosition(srcPos2);
+                        let play2 = () => {
+                            this.finger.setPosition(srcPos2);
+                            this.finger.runAction(cc.bezierTo(0.5, [srcPos2, tmpPos2, dstPos2]));
+                        }
+                        this.schedule(play2, 1, cc.macro.REPEAT_FOREVER, 0);
+                    }, 0.2, 0);
+                });
+                break;
+            case 5:
+                this.mask1.active = true;
+                let item3 = this.container.getChildByName('3');
+                this.line_left2.active = true;
+                this.line_left2.x = item3.x;
+                this.line_left2.y = item3.y;
+                // finger animation
+                this.finger.active = true;
+                let srcPos = item3.getPosition().clone();
+                let dstPos = new cc.Vec2(this.lvlConf.solution['3'].posX, this.lvlConf.solution['3'].posY);
+                let tmpPos = new cc.Vec2((this.lvlConf.solution['3'].posX - item3.x) / 2 - 300, (this.lvlConf.solution['3'].posY - item3.y) / 3);
+                this.finger.setPosition(srcPos);
+                let play3 = () => {
+                    this.finger.setPosition(srcPos);
+                    this.finger.runAction(cc.bezierTo(0.5, [srcPos, tmpPos, dstPos]));
+                }
+                this.schedule(play3, 1, cc.macro.REPEAT_FOREVER, 0);
+                // add listener
+                item3 && this.addItemListener(item3, () => {
+                    this.setSelectFramePos();
+                    this.updateProgress();
+                    item3.color = new cc.Color(255, 255, 255);
+                    item3.off(cc.Node.EventType.TOUCH_START), item3.off(cc.Node.EventType.TOUCH_MOVE), item3.off(cc.Node.EventType.TOUCH_CANCEL), item3.off(cc.Node.EventType.TOUCH_END);
+                    this.selected = null;
+                    item3.runAction(cc.moveTo(0.2, this.lvlConf.solution['3'].posX, this.lvlConf.solution['3'].posY));
+                    this.schedule(() => {
+                        this.line_left2.active = false;
+                        this.finger.stopAllActions();
+                        this.unscheduleAllCallbacks();
+                        // this.unschedule(play1);
+                        let item2 = this.container.getChildByName('1');
+                        this.line_right2.active = true;
+                        this.line_right2.x = item2.x;
+                        this.line_right2.y = item2.y;
+                        // finger animation
+                        let srcPos2 = item2.getPosition().clone();
+                        let dstPos2 = new cc.Vec2(this.lvlConf.solution['1'].posX, this.lvlConf.solution['1'].posY);
+                        let tmpPos2 = new cc.Vec2((this.lvlConf.solution['1'].posX - item2.x) / 2 + 300, (this.lvlConf.solution['1'].posY - item2.y) / 3);
+                        this.finger.setPosition(srcPos2);
+                        let play2 = () => {
+                            this.finger.setPosition(srcPos2);
+                            this.finger.runAction(cc.bezierTo(0.5, [srcPos2, tmpPos2, dstPos2]));
+                        }
+                        this.schedule(play2, 1, cc.macro.REPEAT_FOREVER, 0);
+                        // add listener
+                        item2 && this.addItemListener(item2, () => {
+                            this.setSelectFramePos();
+                            this.updateProgress();
+                            item2.runAction(cc.moveTo(0.2, this.lvlConf.solution['1'].posX, this.lvlConf.solution['1'].posY));
+                            this.schedule(() => {
+                                this.mask1.active = false;
+                                this.mask2.active = true;
+                                this.line_right2.active = false;
+                                this.finger.stopAllActions();
+                                this.unscheduleAllCallbacks();
+                                // this.unschedule(play1);
+                                this.line_rotate.active = true;
+                                this.line_rotate.x = item2.x;
+                                this.line_rotate.y = item2.y;
+                                // finger animation
+                                let srcPos3 = new cc.Vec2(item2.x + 150, item2.y + 50);
+                                let tmpPos3 = new cc.Vec2(item2.x + 120, item2.y - 120);
+                                let dstPos3 = new cc.Vec2(item2.x - 50, item2.y - 150);
+                                this.finger.setPosition(srcPos3);
+                                let play2 = () => {
+                                    this.finger.setPosition(srcPos3);
+                                    this.finger.runAction(cc.bezierTo(0.5, [srcPos3, tmpPos3, dstPos3]));
+                                }
+                                this.schedule(play2, 1, cc.macro.REPEAT_FOREVER, 0);
+                            }, 0.2, 0);
+                        });
+                    }, 0.2, 0);
+                });
+                break;
+            default:
+                break;
+        }
+    }
+
     loadStage(lvlIdx: number, timeStamp: number, isPreload: boolean = false) {
         let log_prefix = isPreload ? 'preload' : 'load';
         let key_suffix = isPreload ? '_preload' : '';
+        let isTutorialLvl: boolean = Const.TutorialLvl.indexOf(lvlIdx) >= 0;
 
         // reset
         this.reset();
@@ -248,7 +415,10 @@ export default class GameView extends cc.Component {
             });
             this.winStep = this.winStep_preload;
 
-            /** preload next lvl */
+            // show tutorial
+            isTutorialLvl && this.showTutorial(lvlIdx);
+
+            // preload next lvl
             this.level_preload = lvlIdx + 1;
             this.loadTimeStamp_preload = Date.now();
             this.loadStage(this.level_preload, this.loadTimeStamp_preload, true);
@@ -349,7 +519,7 @@ export default class GameView extends cc.Component {
                     item.rotation = (this['lvlConf' + key_suffix].question[names[idx]].rot + 360) % 360;
                     item.zIndex = this['lvlConf' + key_suffix].question[names[idx]].zIndex;
                     // add listener
-                    this.addItemListener(item);
+                    !isTutorialLvl && this.addItemListener(item);
                     // add to scene
                     !isPreload && this.container.addChild(item);
                     // }
@@ -358,7 +528,10 @@ export default class GameView extends cc.Component {
                 let len = Object.keys(this['lvlConf' + key_suffix].solution).length;
                 this['winStep' + key_suffix] = 0.9 / (len * len); // (len*(len-1))/(1*2) * 2 + len
 
-                /** preload next lvl */
+                // show tutorial
+                !isPreload && isTutorialLvl && this.showTutorial(lvlIdx);
+
+                // preload next lvl
                 if (!isPreload) {
                     this.level_preload = lvlIdx + 1;
                     this.loadTimeStamp_preload = Date.now();
@@ -375,14 +548,13 @@ export default class GameView extends cc.Component {
     }
 
     // add item listener: select and transpostion
-    private addItemListener(item: cc.Node) {
+    private addItemListener(item: cc.Node, cb?: Function) {
         item.on(cc.Node.EventType.TOUCH_START, (e: cc.Event.EventTouch) => {
-            // stop
             e.stopPropagation();
             this.touchID == null && (this.touchID = e.getID());
             if (this.touchID != e.getID()) return;
             if (!this.canTouch) return;
-            // console.log('touch start: ', item.name);
+
             this.selected && (this.items[this.selected].color = new cc.Color(255, 255, 255));
             this.selected = item.name;
             item.color = new cc.Color(180, 180, 180);
@@ -394,6 +566,7 @@ export default class GameView extends cc.Component {
             e.stopPropagation();
             if (this.touchID != e.getID()) return;
             if (!this.canTouch) return;
+
             let currPos: cc.Vec2 = (e.target.parent as cc.Node).convertToNodeSpaceAR(e.getLocation());
             item.x += (currPos.x - this.prevPos.x);
             item.y += (currPos.y - this.prevPos.y);
@@ -405,15 +578,15 @@ export default class GameView extends cc.Component {
             this.updateProgress();
         });
         item.on(cc.Node.EventType.TOUCH_END, (e: cc.Event.EventTouch) => {
-            // stop
             e.stopPropagation();
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             if (!this.canTouch) return;
-            // console.log('touch end: ', item.name);
+
             this.selected = item.name;
             // is pos valid
             if (this.itemsFrame[this.selected]) {
+                cb && this.itemsFrame[this.selected] == 'solution' && cb();
                 AudioMgr.instance.play('move');
                 // on btn_restart
                 !this.btn_restart.active && (this.btn_restart.active = true);
@@ -434,16 +607,16 @@ export default class GameView extends cc.Component {
             this.prevProgress = this.winBar.progress;
         });
         item.on(cc.Node.EventType.TOUCH_CANCEL, (e: cc.Event.EventTouch) => {
-            // stop
             e.stopPropagation();
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             if (!this.canTouch) return;
-            // console.log('touch end: ', item.name);
+
             this.selected = item.name;
             // is pos valid
             if (this.itemsFrame[this.selected]) {
                 AudioMgr.instance.play('move');
+                cb && this.itemsFrame[this.selected] == 'solution' && cb();
                 // on btn_restart
                 !this.btn_restart.active && (this.btn_restart.active = true);
                 // update progressBar
@@ -538,8 +711,10 @@ export default class GameView extends cc.Component {
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             this.btn_back.color = new cc.Color(255, 255, 255);
+
             AudioMgr.instance.play('button');
             this.clearStage();
+            this.hideTutorial();
             this.node.active = false;
             this.LvlSelectView.active = true;
         });
@@ -806,6 +981,7 @@ export default class GameView extends cc.Component {
             this.canTouch = false;
             // play win animation
             Object.keys(this.lvlConf.solution).forEach(key => {
+                console.log(key, this.items[key].getPosition(), this.lvlConf.solution[key].posX, this.lvlConf.solution[key].posY)
                 this.items[key].runAction(cc.moveTo(0.2, this.lvlConf.solution[key].posX, this.lvlConf.solution[key].posY));
                 if (this.lvlConf.solution[key].rot != null) {
                     typeof (this.lvlConf.solution[key].rot) == 'number' ? this.items[key].runAction(cc.rotateTo(0.2, this.lvlConf.solution[key].rot)) : this.items[key].runAction(cc.rotateTo(0.2, this.lvlConf.solution[key].rot[0]));
@@ -818,6 +994,7 @@ export default class GameView extends cc.Component {
             this.btn_hint.active = false;
             this.btn_restart.active = false;
             this.btn_back.active = false;
+            this.hideTutorial();
             // update
             this.isWin = true;
             if (this.level == Global.gameData.level) {
@@ -827,7 +1004,7 @@ export default class GameView extends cc.Component {
                 this.LvlSelectView.getChildByName('scrollView').getComponent(ScrollViewBetter).updateItemsContent();
             }
             // play sound
-            this.schedule(() => AudioMgr.instance.play('win'), 0.05, 0);
+            AudioMgr.instance.play('win');
             // show win animation
             this.flash.active = true;
             this.schedule(() => { this.flash.rotation += 1.5 }, 0.03, 100);
