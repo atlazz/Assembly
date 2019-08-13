@@ -1,5 +1,5 @@
 /** version */
-export const VERSION = "1.0.2";
+export const VERSION = "1.0.3";
 
 export const State = {
     PLAYING: 1,

@@ -243,6 +243,8 @@ export default class GameView extends cc.Component {
         this.mask2.active = false;
         this.line_left.active = false;
         this.line_right.active = false;
+        this.line_left2.active = false;
+        this.line_right2.active = false;
         this.line_rotate.active = false;
         this.finger.active = false;
         this.finger.stopAllActions();

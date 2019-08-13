@@ -15,7 +15,7 @@ let Global = {
         shareCount: 0,
         lastShareTimestamp: 0,
         //关卡索引
-        level: 1,
+        level: 83,
     },
 
     config: {
@@ -52,8 +52,8 @@ let Global = {
 
         game_hint: 2,
 
-        MaxLevel: 60,
-        MaxShowLevel: 60
+        MaxLevel: 80,
+        MaxShowLevel: 80
     },
 }
 

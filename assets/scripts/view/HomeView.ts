@@ -24,6 +24,16 @@ export default class HomeView extends cc.Component {
 
     private touchTarget;
 
+    constructor() {
+        super();
+        // clear old list
+        try {
+            CC_WECHATGAME && wxDownloader['cleanCache'](wxDownloader['getCacheName'](GameView.BaseUrl + 'solution/title.json'));
+        } catch (e) { 
+            console.log("clear cache file err:", e);
+        }
+    }
+
     start() {
         // login
         if (CC_WECHATGAME) {
