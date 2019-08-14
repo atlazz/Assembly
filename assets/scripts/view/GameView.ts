@@ -111,8 +111,8 @@ export default class GameView extends cc.Component {
         this.addBtnListener();
         this.addRotListener();
 
-        // btn hint animation
-        this.btn_hint.runAction(cc.sequence(cc.scaleTo(0.5, 1.3), cc.scaleTo(0.5, 1)).repeatForever());
+        // // btn hint animation
+        // this.btn_hint.runAction(cc.sequence(cc.scaleTo(0.5, 1.3), cc.scaleTo(0.5, 1)).repeatForever());
     }
 
     startGame(lvlIdx?: number) {

@@ -271,6 +271,7 @@ export default class lvlSelect extends cc.Component {
         this.btn_back.on(cc.Node.EventType.TOUCH_END, () => {
             this.btn_back.opacity = 255;
             this.node.active = false;
+            this.GameView.active = false;
             this.HomeView.active = true;
             AudioMgr.instance.play('button');
         });

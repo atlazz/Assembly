@@ -15,7 +15,7 @@ let Global = {
         shareCount: 0,
         lastShareTimestamp: 0,
         //关卡索引
-        level: 83,
+        level: 1,
     },
 
     config: {

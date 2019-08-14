@@ -15,6 +15,8 @@ export default class HomeView extends cc.Component {
     GameView: cc.Node = null;
     @property(cc.Node)
     LvlSelectView: cc.Node = null;
+    @property(cc.Node)
+    label_version: cc.Node = null;
 
     private gameScript: GameView;
     private lvlSelectScript: LvlSelect;
@@ -47,6 +49,9 @@ export default class HomeView extends cc.Component {
             this.initCnt++;
             this.initCnt >= 2 && this.onInitComplete();
         }
+
+        // print version
+        this.label_version.getComponent(cc.Label).string = Const.VERSION;
 
         // init LvlSelect
         this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect);
