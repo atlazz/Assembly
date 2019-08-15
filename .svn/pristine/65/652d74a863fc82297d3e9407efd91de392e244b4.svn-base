@@ -1,0 +1,316 @@
+(function() {"use strict";var __module = CC_EDITOR ? module : {exports:{}};var __filename = 'preview-scripts/assets/scripts/view/LvlSelect.js';var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} : function (request) {return cc.require(request, __filename);};function __define (exports, require, module) {"use strict";
+cc._RF.push(module, '41c24uUuLZNqoczPjwt7/na', 'LvlSelect', __filename);
+// scripts/view/LvlSelect.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Global_1 = require("../Global");
+var GameView_1 = require("./GameView");
+var ScrollViewBetter_1 = require("../component/ScrollViewBetter");
+var AudioMgr_1 = require("../component/AudioMgr");
+var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
+var lvlSelect = /** @class */ (function (_super) {
+    __extends(lvlSelect, _super);
+    function lvlSelect() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.HomeView = null;
+        _this.GameView = null;
+        _this.btn_back = null;
+        _this.scrollView = null;
+        _this.content = null;
+        _this.lvlLabel = null;
+        _this.cellsPerRow = 3;
+        _this.itemWidth = 210;
+        _this.itemHeight = 300;
+        _this.spacingX = 1.14;
+        _this.spacingY = 1.12;
+        _this.iconList = [];
+        _this.lockList = [];
+        return _this;
+        // update (dt) {}
+    }
+    lvlSelect.prototype.onEnable = function () {
+        // update label
+        this.lvlLabel.getComponent(cc.Label).string = (Global_1.default.gameData.level - 1).toString();
+    };
+    lvlSelect.prototype.init = function () {
+        var _this = this;
+        if (this.iconList.length != 0)
+            return;
+        this.gameScript = this.GameView.getComponent(GameView_1.default);
+        // init label
+        this.lvlLabel.getComponent(cc.Label).string = (Global_1.default.gameData.level - 1).toString();
+        var urls = [
+            'textures/lvlSelect/frame5_0',
+            'textures/lvlSelect/crown2',
+            'textures/lvlSelect/icon_new',
+            'textures/lvlSelect/line',
+            'textures/lvlSelect/question',
+            'textures/lvlSelect/lock',
+            'textures/lvlSelect/zhezhao',
+        ];
+        cc.loader.loadResArray(urls, function (err, res) {
+            if (err) {
+                console.error('loadResArray error:', err);
+            }
+            ;
+            console.log(res);
+            _this.iconList.push(new cc.SpriteFrame(res[1]));
+            _this.iconList.push(new cc.SpriteFrame(res[2]));
+            _this.lockList.push(new cc.SpriteFrame(res[4]));
+            _this.lockList.push(new cc.SpriteFrame(res[5]));
+            // for (let i = 0; i < Global.config.MaxShowLevel; i++) {
+            //     /** frame */
+            //     let item = new cc.Node('item' + (i + 1).toString());
+            //     this.content.addChild(item);
+            //     let sp = item.addComponent(cc.Sprite);
+            //     sp.spriteFrame = new cc.SpriteFrame(res[0]);
+            //     item.width = this.itemWidth;
+            //     item.height = this.itemHeight;
+            //     item.x = (i % this.cellsPerRow - Math.floor(this.cellsPerRow / 2) + (this.cellsPerRow + 1) % 2 * 0.5) * item.width * this.spacingX;
+            //     item.y = -((Math.floor(i / this.cellsPerRow)) + 0.5) * item.height * this.spacingY;
+            //     item.zIndex = 1;
+            //     this.content.height = ((Math.floor(Global.config.MaxShowLevel / this.cellsPerRow)) + 1) * this.itemHeight * this.spacingY;
+            //     // add listener
+            //     this.addItemListener(item, i + 1);
+            //     /** icon */
+            //     if (this.iconList.length == 0) {
+            //         this.iconList.push(new cc.SpriteFrame(res[1]));
+            //         this.iconList.push(new cc.SpriteFrame(res[2]));
+            //     }
+            //     let icon = new cc.Node('icon');
+            //     item.addChild(icon);
+            //     icon.addComponent(cc.Sprite);
+            //     icon.getComponent(cc.Sprite).spriteFrame = this.iconList[1];
+            //     icon.x = -item.width / 2 + icon.width * 0.4;
+            //     icon.y = item.height / 2 - icon.height * 0.85;
+            //     /** line */
+            //     if (i % 3 == 0) {
+            //         let line = new cc.Node('line' + Math.floor(i / 3));
+            //         this.content.addChild(line);
+            //         line.addComponent(cc.Sprite);
+            //         line.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(res[3]);
+            //         line.x = 0;
+            //         line.y = item.y + item.height * 0.45;
+            //         line.zIndex = 0;
+            //     }
+            //     /** lvlLabel */
+            //     let label = new cc.Node();
+            //     item.addChild(label);
+            //     label.addComponent(cc.Label);
+            //     label.getComponent(cc.Label).string = (i + 1).toString();
+            //     label.getComponent(cc.Label).fontSize = 30;
+            //     label.getComponent(cc.Label).font = this.lvlLabel.getComponent(cc.Label).font;
+            //     label.color = new cc.Color(0, 0, 0);
+            //     label.x = 0;
+            //     label.y = -item.height * 0.37;
+            //     /** lock */
+            //     if (this.lockList.length == 0) {
+            //         this.lockList.push(new cc.SpriteFrame(res[4]));
+            //         this.lockList.push(new cc.SpriteFrame(res[5]));
+            //     }
+            //     let lock = new cc.Node('lock');
+            //     item.addChild(lock);
+            //     lock.addComponent(cc.Sprite);
+            //     lock.getComponent(cc.Sprite).spriteFrame = this.lockList[0];
+            //     lock.x = 0;
+            //     lock.y = -5;
+            //     /** mask */
+            //     let mask = new cc.Node('mask');
+            //     item.addChild(mask);
+            //     mask.addComponent(cc.Sprite);
+            //     mask.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(res[6]);
+            //     mask.x = 0;
+            //     mask.y = 0;
+            //     // update list by level index
+            //     this.updateList(i + 1);
+            // }
+            _this.scrollView.getComponent(ScrollViewBetter_1.default).createItems(Math.ceil(Global_1.default.config.MaxShowLevel / 3), function (itemNode, index) {
+                var _loop_1 = function (i) {
+                    var lvlIdx = index * 3 + i + 1;
+                    var item = itemNode.getChildByName(i.toString());
+                    // add listener
+                    _this.addItemListener(item, lvlIdx);
+                    // change item
+                    var icon = item.getChildByName('icon');
+                    var lock = item.getChildByName('lock');
+                    var mask = item.getChildByName('mask');
+                    var solution = item.getChildByName('solution');
+                    var label = item.getChildByName('label');
+                    label.getComponent(cc.Label).string = lvlIdx.toString();
+                    if (lvlIdx < Global_1.default.gameData.level) {
+                        icon.active = true;
+                        icon.getComponent(cc.Sprite).spriteFrame = _this.iconList[0];
+                        icon.x = -item.width / 2 + icon.width * 0.4;
+                        icon.y = item.height / 2 - icon.height * 0.85;
+                        lock.active = false;
+                        mask.active = false;
+                        solution.active = true;
+                        cc.loader.load(GameView_1.default.BaseUrl + 'solution/' + _this.titleJson[lvlIdx] + '.png', function (err, res2) {
+                            solution.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(res2);
+                            solution.scale = 0.48;
+                        });
+                    }
+                    else if (lvlIdx == Global_1.default.gameData.level && lvlIdx <= Global_1.default.config.MaxLevel) {
+                        icon.active = true;
+                        icon.getComponent(cc.Sprite).spriteFrame = _this.iconList[1];
+                        icon.x = -item.width / 2 + icon.width * 0.4;
+                        icon.y = item.height / 2 - icon.height * 0.85;
+                        lock.active = true;
+                        lock.getComponent(cc.Sprite).spriteFrame = _this.lockList[0];
+                        mask.active = false;
+                        solution.active = false;
+                    }
+                    else {
+                        icon.active = false;
+                        lock.active = true;
+                        lock.getComponent(cc.Sprite).spriteFrame = _this.lockList[1];
+                        mask.active = true;
+                        mask.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(res[6]);
+                        solution.active = false;
+                    }
+                };
+                for (var i = 0; i < 3; i++) {
+                    _loop_1(i);
+                }
+            }, 0);
+        });
+        this.addBtnListener();
+    };
+    // // update list by level idx: start to end
+    // updateList(start: number, end?: number) {
+    //     // update label
+    //     this.lvlLabel.getComponent(cc.Label).string = (Global.gameData.level - 1).toString();
+    //     // update list item
+    //     !end && (end = start);
+    //     end < 1 && (end = 1);
+    //     end > Global.config.MaxShowLevel && (end = Global.config.MaxShowLevel);
+    //     while (start <= end) {
+    //         let item: cc.Node = this.content.getChildByName('item' + start);
+    //         let icon: cc.Node = item.getChildByName('icon');
+    //         let lock: cc.Node = item.getChildByName('lock');
+    //         let mask: cc.Node = item.getChildByName('mask');
+    //         if (start < Global.gameData.level) {
+    //             icon.active = true;
+    //             icon.getComponent(cc.Sprite).spriteFrame = this.iconList[0];
+    //             lock.active = false;
+    //             mask.active = false;
+    //             // set content
+    //             let solution: cc.Node = item.getChildByName('solution');
+    //             if (solution) {
+    //                 solution.active = true;
+    //             } else {
+    //                 solution = new cc.Node('solution');
+    //                 item.addChild(solution);
+    //                 solution.addComponent(cc.Sprite);
+    //                 solution.y = -5;
+    //                 cc.loader.load(GameView.BaseUrl + 'solution/' + this.titleJson[start] + '.png', (err, res) => {
+    //                     solution.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(res);
+    //                     solution.scale = 0.48;
+    //                 });
+    //             }
+    //         } else if (start == Global.gameData.level && start <= Global.config.MaxLevel) {
+    //             icon.active = true;
+    //             icon.getComponent(cc.Sprite).spriteFrame = this.iconList[1];
+    //             lock.active = true;
+    //             lock.getComponent(cc.Sprite).spriteFrame = this.lockList[0];
+    //             mask.active = false;
+    //         } else {
+    //             icon.active = false;
+    //             lock.active = true;
+    //             lock.getComponent(cc.Sprite).spriteFrame = this.lockList[1];
+    //             mask.active = true;
+    //         }
+    //         start++;
+    //     }
+    // }
+    lvlSelect.prototype.addItemListener = function (item, idx) {
+        var _this = this;
+        // off
+        item.targetOff(item);
+        // on
+        item.on(cc.Node.EventType.TOUCH_START, function (e) {
+            item.color = new cc.Color(180, 180, 180);
+        }, item);
+        item.on(cc.Node.EventType.TOUCH_MOVE, function (e) {
+            item.color = new cc.Color(255, 255, 255);
+        }, item);
+        item.on(cc.Node.EventType.TOUCH_END, function (e) {
+            console.log('click level', idx);
+            AudioMgr_1.default.instance.play('button');
+            item.color = new cc.Color(255, 255, 255);
+            if (idx <= Global_1.default.gameData.level) {
+                _this.gameScript.startGame(idx);
+                _this.node.active = false;
+                _this.GameView.active = true;
+            }
+        }, item);
+    };
+    lvlSelect.prototype.addBtnListener = function () {
+        var _this = this;
+        // btn back
+        this.btn_back.on(cc.Node.EventType.TOUCH_START, function () {
+            _this.btn_back.opacity = 180;
+        });
+        this.btn_back.on(cc.Node.EventType.TOUCH_CANCEL, function () {
+            _this.btn_back.opacity = 255;
+        });
+        this.btn_back.on(cc.Node.EventType.TOUCH_END, function () {
+            _this.btn_back.opacity = 255;
+            _this.node.active = false;
+            _this.HomeView.active = true;
+            AudioMgr_1.default.instance.play('button');
+        });
+    };
+    __decorate([
+        property(cc.Node)
+    ], lvlSelect.prototype, "HomeView", void 0);
+    __decorate([
+        property(cc.Node)
+    ], lvlSelect.prototype, "GameView", void 0);
+    __decorate([
+        property(cc.Node)
+    ], lvlSelect.prototype, "btn_back", void 0);
+    __decorate([
+        property(cc.Node)
+    ], lvlSelect.prototype, "scrollView", void 0);
+    __decorate([
+        property(cc.Node)
+    ], lvlSelect.prototype, "content", void 0);
+    __decorate([
+        property(cc.Node)
+    ], lvlSelect.prototype, "lvlLabel", void 0);
+    __decorate([
+        property
+    ], lvlSelect.prototype, "cellsPerRow", void 0);
+    __decorate([
+        property
+    ], lvlSelect.prototype, "itemWidth", void 0);
+    __decorate([
+        property
+    ], lvlSelect.prototype, "itemHeight", void 0);
+    __decorate([
+        property
+    ], lvlSelect.prototype, "spacingX", void 0);
+    __decorate([
+        property
+    ], lvlSelect.prototype, "spacingY", void 0);
+    lvlSelect = __decorate([
+        ccclass
+    ], lvlSelect);
+    return lvlSelect;
+}(cc.Component));
+exports.default = lvlSelect;
+
+cc._RF.pop();
+        }
+        if (CC_EDITOR) {
+            __define(__module.exports, __require, __module);
+        }
+        else {
+            cc.registerModuleFunc(__filename, function () {
+                __define(__module.exports, __require, __module);
+            });
+        }
+        })();
+        //# sourceMappingURL=LvlSelect.js.map
+        

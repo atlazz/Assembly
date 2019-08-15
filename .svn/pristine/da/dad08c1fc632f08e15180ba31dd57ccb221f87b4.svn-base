@@ -1,0 +1,132 @@
+(function() {"use strict";var __module = CC_EDITOR ? module : {exports:{}};var __filename = 'preview-scripts/cc-inspector-plugin/inspector.js';var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} : function (request) {return cc.require(request, __filename);};function __define (exports, require, module) {"use strict";
+cc._RF.push(module, '6027eiPgQFPMqsnYDf7Kl65', 'inspector', __filename);
+// inspector.js
+
+"use strict";
+
+var CCInspectorPluginMsg = require("CCInspectorPluginMsg");var inspector = {
+  log: function log() {
+    1 === arguments.length || 2 === arguments.length || arguments.length;
+  },
+  initInspector: function initInspector() {
+    window.inspectorGameMemoryStorage = window.inspectorGameMemoryStorage || {}, this.onWebSocketInit();
+  },
+  _collectNodeInfo: function _collectNodeInfo(e) {
+    if (e) {
+      var t = this._getNodeComponentsInfo(e);return { name: e.name, active: e.active, uuid: e.uuid, type: e.constructor.name, x: e.x, y: e.y, zIndex: e.zIndex, childrenCount: e.childrenCount, children: [], width: e.width, height: e.height, color: { r: e.color.r, g: e.color.g, b: e.color.b, a: e.color.a }, opacity: e.opacity, rotation: e.rotation, rotationX: e.rotationX, rotationY: e.rotationY, anchorX: e.anchorX, anchorY: e.anchorY, scaleX: e.scaleX, scaleY: e.scaleY, skewX: e.skewX, skewY: e.skewY, components: t };
+    }return null;
+  },
+  getNodeInfo: function getNodeInfo(e) {
+    var t = window.inspectorGameMemoryStorage[e];return t ? this._collectNodeInfo(t) : null;
+  },
+  _getNodeComponentsInfo: function _getNodeComponentsInfo(e) {
+    var t = [],
+        o = e._components;for (var _e = 0; _e < o.length; _e++) {
+      var n = o[_e];window.inspectorGameMemoryStorage[n.uuid] = n, t.push({ uuid: n.uuid, type: n.constructor.name, name: cc.js.getClassName(n) });
+    }return t;
+  },
+  _collectChildrenInfo: function _collectChildrenInfo(e, t) {
+    var o = this._collectNodeInfo(e);window.inspectorGameMemoryStorage[e.uuid] = e;var n = e.getChildren();for (var _e2 = 0; _e2 < n.length; _e2++) {
+      var _t = n[_e2];this._collectChildrenInfo(_t, o.children);
+    }t.push(o);
+  },
+  _collectTreeInfo: function _collectTreeInfo() {
+    var e = [],
+        t = cc.director.getScene().getChildren();for (var o = 0; o < t.length; o++) {
+      var n = t[o];this._collectChildrenInfo(n, e);
+    }return e;
+  },
+  wsSend: function wsSend(e, t) {
+    if (this.ws) {
+      var o = { code: e, data: t },
+          n = JSON.stringify(o);cc.sys.isBrowser, this.ws.send(n);
+    }
+  },
+  onWebSocketInit: function onWebSocketInit() {
+    this.ws = new WebSocket("ws://localhost:6543"), this.ws.onopen = function () {
+      this.wsSend(CCInspectorPluginMsg.Msg.Test, "hello cc-inspector!");
+    }.bind(this), this.ws.onmessage = function (e) {
+      cc.sys.isBrowser;var t = JSON.parse(e.data),
+          o = t.code,
+          n = t.data;if (o === CCInspectorPluginMsg.Msg.GetTreeInfo) {
+        var _e3 = this._collectTreeInfo();this.wsSend(CCInspectorPluginMsg.Msg.GetTreeInfo, _e3);
+      } else if (o === CCInspectorPluginMsg.Msg.GetNodeInfo) {
+        var _e4 = this.getNodeInfo(n);_e4 && this.wsSend(CCInspectorPluginMsg.Msg.GetNodeInfo, _e4);
+      } else if (o === CCInspectorPluginMsg.Msg.Position) {
+        var _e5 = n.uuid,
+            _t2 = n.data,
+            _o = window.inspectorGameMemoryStorage[_e5];_o && (_o.x = _t2.x, _o.y = _t2.y);
+      } else if (o === CCInspectorPluginMsg.Msg.Opacity) {
+        var _e6 = n.uuid,
+            _t3 = n.data,
+            _o2 = window.inspectorGameMemoryStorage[_e6];_o2 && (_o2.opacity = _t3);
+      } else if (o === CCInspectorPluginMsg.Msg.Anchor) {
+        var _e7 = n.uuid,
+            _t4 = n.data,
+            _o3 = window.inspectorGameMemoryStorage[_e7];_o3 && (_o3.anchorX = _t4.x, _o3.anchorY = _t4.y);
+      } else if (o === CCInspectorPluginMsg.Msg.Size) {
+        var _e8 = n.uuid,
+            _t5 = n.data,
+            _o4 = window.inspectorGameMemoryStorage[_e8];_o4 && (_o4.width = _t5.width, _o4.height = _t5.height);
+      } else if (o === CCInspectorPluginMsg.Msg.Scale) {
+        var _e9 = n.uuid,
+            _t6 = n.data,
+            _o5 = window.inspectorGameMemoryStorage[_e9];_o5 && (_o5.scaleX = _t6.x, _o5.scaleY = _t6.y);
+      } else if (o === CCInspectorPluginMsg.Msg.Rotation) {
+        var _e10 = n.uuid,
+            _t7 = n.data,
+            _o6 = window.inspectorGameMemoryStorage[_e10];_o6 && (_o6.rotation = _t7);
+      } else if (o === CCInspectorPluginMsg.Msg.Skew) {
+        var _e11 = n.uuid,
+            _t8 = n.data,
+            _o7 = window.inspectorGameMemoryStorage[_e11];_o7 && (_o7.skewX = _t8.x, _o7.skewY = _t8.y);
+      } else if (o === CCInspectorPluginMsg.Msg.Color) {
+        var _e12 = n.uuid,
+            _t9 = n.data,
+            _o8 = window.inspectorGameMemoryStorage[_e12];_o8 && (_o8.color = cc.color(_t9));
+      } else if (o === CCInspectorPluginMsg.Msg.Active) {
+        var _e13 = n.uuid,
+            _t10 = n.data,
+            _o9 = window.inspectorGameMemoryStorage[_e13];_o9 && (_o9.active = _t10);
+      }
+    }.bind(this), this.ws.onerror = function () {
+      this.ws = null;
+    }.bind(this), this.ws.onclose = function () {
+      this.ws = null;
+    }.bind(this);
+  },
+  _testHttp: function _testHttp() {
+    var e = new XMLHttpRequest();e.onreadystatechange = function () {
+      if (4 === e.readyState && e.status >= 200 && e.status < 400) e.responseText;
+    }.bind(this), e.onerror = function () {}, e.open("post", "http://localhost:6543", !0);try {
+      e.send("test");
+    } catch (e) {}
+  },
+  test: function test() {
+    if (CC_EDITOR) {
+      Editor.log("initInspector in editor");
+      var _require = require("electron"),
+          e = _require.ipcRenderer;
+
+      e.on("msg1", function () {
+        Editor.log("收到msg1的消息");
+      }), e.on("ipc-message", function () {
+        Editor.log("ipc-message");
+      });
+    }
+  }
+};inspector.initInspector(), module.exports = inspector;
+
+cc._RF.pop();
+        }
+        if (CC_EDITOR) {
+            __define(__module.exports, __require, __module);
+        }
+        else {
+            cc.registerModuleFunc(__filename, function () {
+                __define(__module.exports, __require, __module);
+            });
+        }
+        })();
+        //# sourceMappingURL=inspector.js.map
+        

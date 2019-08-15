@@ -1,0 +1,230 @@
+"use strict";
+cc._RF.push(module, '77fa4AdN4dBL56YquQRgehn', 'Reward');
+// scripts/component/Reward.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var wx_1 = require("../SDK/wx");
+var ws_1 = require("../SDK/ws");
+var Ad = require("./Ad");
+var Global_1 = require("../Global");
+var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
+var Reward = /** @class */ (function (_super) {
+    __extends(Reward, _super);
+    function Reward() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.shareTimestampMap = {};
+        _this.lastShareTimestamp = 0;
+        return _this;
+    }
+    Reward_1 = Reward;
+    Reward.prototype.onLoad = function () {
+        var _this = this;
+        !Reward_1.instance && (Reward_1.instance = this);
+        CC_WECHATGAME && wx_1.default.onShow(function (e) {
+            var shareArgs = _this.shareArgs;
+            if (shareArgs && shareArgs.length) {
+                var option = shareArgs[0] || {};
+                var pos = option.pos;
+                var success = option.success;
+                var fail_1 = option.fail;
+                var complete_1 = option.complete;
+                try {
+                    var now = Date.now();
+                    if (success || fail_1) {
+                        if (Global_1.default.config.share_delay <= 0.1 || (now - _this.lastShareTimestamp) > ((Global_1.default.config.share_delay || 5) * 1000)) {
+                            Global_1.default.gameData.shareCount++;
+                            Global_1.default.gameData.lastShareTimestamp = now;
+                            _this.shareTimestampMap[pos] = now;
+                            success && success(e);
+                            complete_1 && complete_1(e);
+                        }
+                        else {
+                            _this.shareTimestampMap[pos] = 0;
+                            wx_1.default.showModal({
+                                title: '提示',
+                                content: Global_1.default.config.share_fail,
+                                cancelText: '知道了',
+                                confirmText: '重新发送',
+                                success: function (res) {
+                                    if (res.confirm) {
+                                        _this.share.apply(_this, shareArgs);
+                                    }
+                                    else {
+                                        fail_1 && fail_1(e);
+                                        complete_1 && complete_1(e);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    else {
+                        _this.shareTimestampMap[pos] = 0;
+                        complete_1 && complete_1(e);
+                    }
+                }
+                finally {
+                    _this.lastShareTimestamp = 0;
+                    _this.shareArgs = null;
+                }
+            }
+        });
+    };
+    Reward.prototype.reward = function (_a) {
+        var pos = _a.pos, query = _a.query, success = _a.success, fail = _a.fail, complete = _a.complete;
+        if (this.isShareState(pos)) {
+            this.share({ pos: pos, query: query, success: success, fail: fail, complete: complete });
+        }
+        else {
+            this.video({ pos: pos, success: success, fail: fail, complete: complete });
+        }
+    };
+    Reward.prototype.share = function (_a) {
+        var pos = _a.pos, query = _a.query, success = _a.success, fail = _a.fail, complete = _a.complete;
+        if (!CC_WECHATGAME) {
+            console.log('onMiniGame = false');
+            fail && fail();
+            complete && complete();
+            return;
+        }
+        if (!this.isOnline() || !this.allowShare(pos)) {
+            console.log('share not allowed');
+            fail && fail();
+            complete && complete();
+            return;
+        }
+        var now = Date.now();
+        var shareTimestamp = Number(this.shareTimestampMap[pos]);
+        if (shareTimestamp && (now - shareTimestamp < Global_1.default.config.share_time * 1000)) {
+            console.log('请稍等一会再操作');
+            fail && fail();
+            complete && complete();
+            return;
+        }
+        if (success || fail) {
+            this.shareTimestampMap[pos] = now;
+        }
+        this.lastShareTimestamp = Date.now();
+        this.shareArgs = arguments;
+        ws_1.default.share({ pos: pos, query: query });
+    };
+    Reward.prototype.video = function (_a) {
+        var pos = _a.pos, success = _a.success, fail = _a.fail, complete = _a.complete;
+        if (!CC_WECHATGAME) {
+            console.log('onMiniGame = false');
+            fail && fail();
+            complete && complete();
+            return;
+        }
+        Ad.posShowVideo(pos, /**onErrorCallback*/ function () {
+            console.log('今日视频已看完');
+            fail && fail();
+            complete && complete();
+        }, /**onCloseCallback*/ function (res) {
+            if ((res && res.isEnded) || res === undefined) {
+                Global_1.default.gameData.videoCount++;
+                Global_1.default.gameData.lastVideoTimestamp = Date.now();
+                success && success();
+            }
+            else {
+                // 未看完关闭视频，不算视频获取播放失败
+                if (!(res && !res.isEnded)) {
+                    fail && fail();
+                }
+            }
+            complete && complete();
+        });
+    };
+    //允许转发
+    Reward.prototype.allowShare = function (pos) {
+        var flag = Global_1.default.config[pos + '_allow_share'];
+        if ('boolean' === typeof flag) {
+            return flag;
+        }
+        else {
+            return Global_1.default.config.allow_share;
+        }
+    };
+    //允许视频
+    Reward.prototype.allowVideo = function (pos) {
+        var flag = Global_1.default.config[pos + '_allow_video'];
+        if ('boolean' === typeof flag) {
+            return flag;
+        }
+        else {
+            return Global_1.default.config.allow_video;
+        }
+    };
+    //是否线上版本
+    Reward.prototype.isOnline = function () {
+        return Global_1.default.config.online;
+    };
+    //分享优先
+    Reward.prototype.isShareFirst = function (pos) {
+        var flag = Global_1.default.config[pos + '_share_first'];
+        if ('boolean' === typeof flag) {
+            return flag;
+        }
+        else {
+            return Global_1.default.config.share_first;
+        }
+    };
+    //分享次数
+    Reward.prototype.getShareCount = function () {
+        var now = new Date();
+        var todayBeginTimestamp = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        if (!Global_1.default.gameData.lastShareTimestamp || Global_1.default.gameData.lastShareTimestamp < todayBeginTimestamp) {
+            Global_1.default.gameData.shareCount = 0;
+        }
+        return Global_1.default.gameData.shareCount;
+    };
+    //分享超过次数
+    Reward.prototype.isOverShare = function () {
+        return Global_1.default.config.share_number && Global_1.default.config.share_number <= this.getShareCount();
+    };
+    //视频次数
+    Reward.prototype.getVideoCount = function () {
+        var now = new Date();
+        var todayBeginTimestamp = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        if (!Global_1.default.gameData.lastVideoTimestamp || Global_1.default.gameData.lastVideoTimestamp < todayBeginTimestamp) {
+            Global_1.default.gameData.videoCount = 0;
+        }
+        return Global_1.default.gameData.videoCount;
+    };
+    //视频超过次数
+    Reward.prototype.isOverVideo = function () {
+        return Global_1.default.config.video_number && Global_1.default.config.video_number <= this.getVideoCount();
+    };
+    //是否有视频可观看
+    Reward.prototype.hasVideo = function () {
+        return Ad.hasVideoAd();
+    };
+    Reward.prototype.isShareState = function (pos) {
+        if (!this.isOnline() || !this.allowShare(pos)) {
+            return false;
+        }
+        else if (this.allowVideo(pos) && this.hasVideo()) {
+            if (this.isShareFirst(pos)) {
+                if (this.isOverShare()) {
+                    return this.isOverVideo();
+                }
+                else {
+                    return true;
+                }
+            }
+            else {
+                return this.isOverVideo();
+            }
+        }
+        else {
+            return true;
+        }
+    };
+    var Reward_1;
+    Reward = Reward_1 = __decorate([
+        ccclass
+    ], Reward);
+    return Reward;
+}(cc.Component));
+exports.default = Reward;
+
+cc._RF.pop();

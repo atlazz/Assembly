@@ -1,0 +1,197 @@
+2019-08-12T12:33:41.074Z - normal: Load ~/.CocosCreator/settings.json
+2019-08-12T12:33:42.242Z - normal: Initializing Asset Database
+2019-08-12T12:33:42.273Z - normal: checking language setting...
+2019-08-12T12:33:42.273Z - normal: Language: zh
+2019-08-12T12:33:43.925Z - success: preview server running at http://localhost:7456
+2019-08-12T12:33:43.927Z - success: protocol editor-framework registered
+2019-08-12T12:33:43.927Z - success: protocol app registered
+2019-08-12T12:33:43.927Z - success: protocol theme registered
+2019-08-12T12:33:43.927Z - success: protocol packages registered
+2019-08-12T12:33:43.927Z - success: protocol uuid registerred
+2019-08-12T12:33:43.927Z - success: protocol db registerred
+2019-08-12T12:33:43.927Z - success: protocol thumbnail registerred
+2019-08-12T12:33:43.927Z - success: protocol unpack registerred
+2019-08-12T12:33:43.928Z - success: protocol disable-commonjs registerred
+2019-08-12T12:33:44.119Z - normal: connected!
+2019-08-12T12:33:44.120Z - normal: Check project F:\LayaProjects\Assembly
+2019-08-12T12:33:44.122Z - normal: Initializing project F:\LayaProjects\Assembly
+2019-08-12T12:33:44.628Z - normal: Initializing Cocos2d
+2019-08-12T12:33:47.435Z - normal: Initializing engine extends
+2019-08-12T12:33:47.601Z - success: asset-db-debugger loaded
+2019-08-12T12:33:47.607Z - success: baidu-adapter loaded
+2019-08-12T12:33:47.614Z - success: color-picker loaded
+2019-08-12T12:33:47.916Z - success: fb-audience-network loaded
+2019-08-12T12:33:47.988Z - success: fb-live-stream loaded
+2019-08-12T12:33:48.003Z - success: google-play-instant loaded
+2019-08-12T12:33:48.035Z - success: huawei-runtime loaded
+2019-08-12T12:33:48.845Z - success: cpk-publish loaded
+2019-08-12T12:33:48.848Z - success: jsb-adapter loaded
+2019-08-12T12:33:48.887Z - success: oppo-runtime loaded
+2019-08-12T12:33:48.911Z - success: package-manager loaded
+2019-08-12T12:33:49.227Z - success: qqplay-adapter loaded
+2019-08-12T12:33:49.256Z - success: runtime-dev-tools loaded
+2019-08-12T12:33:49.287Z - success: sdkbox loaded
+2019-08-12T12:33:49.300Z - success: tester loaded
+2019-08-12T12:33:49.308Z - success: ui-grid loaded
+2019-08-12T12:33:49.322Z - success: ui-kit-preview-extra loaded
+2019-08-12T12:33:49.335Z - success: ui-kit-preview loaded
+2019-08-12T12:33:49.343Z - success: ui-kit loaded
+2019-08-12T12:33:49.350Z - success: ui-tree loaded
+2019-08-12T12:33:49.378Z - success: vivo-runtime loaded
+2019-08-12T12:33:49.381Z - success: weapp-adapter loaded
+2019-08-12T12:33:49.384Z - success: xiaomi-adapter loaded
+2019-08-12T12:33:49.427Z - success: assets loaded
+2019-08-12T12:33:49.429Z - success: builder loaded
+2019-08-12T12:33:49.908Z - success: cocos-services loaded
+2019-08-12T12:33:49.911Z - success: console loaded
+2019-08-12T12:33:49.939Z - success: fb-instant-games loaded
+2019-08-12T12:33:49.995Z - success: google-instant-games loaded
+2019-08-12T12:33:50.009Z - success: hierarchy loaded
+2019-08-12T12:33:50.014Z - success: inspector loaded
+2019-08-12T12:33:50.026Z - success: keystore loaded
+2019-08-12T12:33:50.029Z - success: node-library loaded
+2019-08-12T12:33:50.031Z - success: package-asset loaded
+2019-08-12T12:33:50.032Z - success: preferences loaded
+2019-08-12T12:33:50.033Z - success: project-exporter loaded
+2019-08-12T12:33:50.035Z - success: project-importer loaded
+2019-08-12T12:33:50.036Z - success: project-settings loaded
+2019-08-12T12:33:50.041Z - success: scene loaded
+2019-08-12T12:33:50.043Z - success: simulator-debugger loaded
+2019-08-12T12:33:50.044Z - success: sprite-editor loaded
+2019-08-12T12:33:50.051Z - success: store loaded
+2019-08-12T12:33:50.054Z - success: timeline loaded
+2019-08-12T12:33:50.058Z - success: xiaomi-runtime loaded
+2019-08-12T12:33:50.087Z - success: cc-inspector loaded
+2019-08-12T12:33:50.095Z - success: clean loaded
+2019-08-12T12:33:54.227Z - info: Cocos Services load base data!
+2019-08-12T12:33:54.242Z - normal: Loading packages
+2019-08-12T12:33:54.247Z - normal: Watching packages
+2019-08-12T12:33:54.768Z - normal: Run Application
+2019-08-12T13:00:52.030Z - success: huawei-runtime unloaded
+2019-08-12T13:00:52.032Z - success: cpk-publish unloaded
+2019-08-12T13:00:52.032Z - success: oppo-runtime unloaded
+2019-08-12T13:00:52.032Z - success: vivo-runtime unloaded
+2019-08-12T13:00:52.046Z - success: huawei-runtime loaded
+2019-08-12T13:00:52.046Z - success: cpk-publish loaded
+2019-08-12T13:00:52.046Z - success: oppo-runtime loaded
+2019-08-12T13:00:52.046Z - success: vivo-runtime loaded
+2019-08-12T13:00:53.219Z - normal: Start building with options : {
+  "actualPlatform": "wechatgame",
+  "android-instant": {
+    "REMOTE_SERVER_ROOT": "",
+    "host": "",
+    "pathPattern": "",
+    "recordPath": "",
+    "scheme": "https",
+    "skipRecord": false
+  },
+  "apiLevel": "",
+  "appABIs": [],
+  "appBundle": false,
+  "baidugame": {
+    "REMOTE_SERVER_ROOT": "",
+    "appid": "testappid",
+    "orientation": "portrait",
+    "subContext": ""
+  },
+  "buildPath": "F:\\LayaProjects\\Assembly\\build",
+  "debug": false,
+  "dest": "F:\\LayaProjects\\Assembly\\build\\wechatgame",
+  "embedWebDebugger": false,
+  "encryptJs": true,
+  "excludeScenes": [],
+  "excludedModules": [
+    "Canvas Renderer",
+    "Dynamic Atlas",
+    "TiledMap",
+    "Spine Skeleton",
+    "DragonBones",
+    "RichText",
+    "MotionStreak",
+    "Toggle",
+    "PageView",
+    "PageViewIndicator",
+    "Slider",
+    "EditBox",
+    "VideoPlayer",
+    "WebView",
+    "Collider",
+    "Physics",
+    "StudioComponent",
+    "Intersection",
+    "Native Socket"
+  ],
+  "fb-instant-games": {},
+  "includeSDKBox": false,
+  "inlineSpriteFrames": true,
+  "inlineSpriteFrames_native": true,
+  "md5Cache": false,
+  "mergeStartScene": false,
+  "optimizeHotUpdate": false,
+  "orientation": {
+    "landscapeLeft": true,
+    "landscapeRight": true,
+    "portrait": false,
+    "upsideDown": false
+  },
+  "packageName": "org.cocos2d.Assembly",
+  "platform": "wechatgame",
+  "previewHeight": "720",
+  "previewWidth": "1280",
+  "qqplay": {
+    "REMOTE_SERVER_ROOT": "",
+    "orientation": "portrait",
+    "zip": false
+  },
+  "scenes": [
+    "8e1fb3c1-feac-4478-9efb-45893ca54b96"
+  ],
+  "sourceMaps": false,
+  "startScene": "8e1fb3c1-feac-4478-9efb-45893ca54b96",
+  "template": "link",
+  "title": "Assembly",
+  "useDebugKeystore": true,
+  "vsVersion": "auto",
+  "webOrientation": "auto",
+  "wechatgame": {
+    "REMOTE_SERVER_ROOT": "https://coolant.miniant.cn/Assembly",
+    "appid": "wx76968f239ab26a16",
+    "orientation": "portrait",
+    "separate_engine": false,
+    "subContext": ""
+  },
+  "xxteaKey": "f2ffe59c-b661-48",
+  "zipCompressJs": true,
+  "project": "F:\\LayaProjects\\Assembly",
+  "projectName": "Assembly",
+  "debugBuildWorker": false
+}
+2019-08-12T13:00:53.221Z - normal: Building F:\LayaProjects\Assembly
+2019-08-12T13:00:53.221Z - normal: Destination F:\LayaProjects\Assembly\build\wechatgame
+2019-08-12T13:00:53.418Z - normal: Delete F:\LayaProjects\Assembly\build\wechatgame\subpackages/**/*,F:\LayaProjects\Assembly\build\wechatgame\**\*
+2019-08-12T13:00:57.003Z - normal: Start building assets
+2019-08-12T13:00:57.003Z - normal: Start spawn build-worker
+2019-08-12T13:00:57.525Z - normal: Finish spawn build-worker
+2019-08-12T13:00:57.526Z - normal: Start init build-worker
+2019-08-12T13:00:59.780Z - normal: Finish init build-worker
+2019-08-12T13:00:59.780Z - normal: Start build-assets in worker
+2019-08-12T13:01:01.222Z - normal: Finish build-assets in worker
+2019-08-12T13:01:01.239Z - normal: Finish building assets
+2019-08-12T13:01:01.266Z - normal: Start building plugin scripts
+2019-08-12T13:01:01.317Z - normal: Generating main.js from E:\CocosCreator\resources\static\build-templates\shares\main.js
+2019-08-12T13:01:02.572Z - normal: Built to "F:\LayaProjects\Assembly\build\wechatgame" successfully
+2019-08-12T13:01:02.597Z - success: weapp-adapter unloaded
+2019-08-12T13:01:02.598Z - success: weapp-adapter loaded
+2019-08-12T13:01:05.979Z - normal: Initializing...
+
+2019-08-12T13:01:06.000Z - normal: idePortFile: C:\Users\win10\AppData\Local\微信开发者工具\User Data\Default\.ide
+
+2019-08-12T13:01:07.033Z - normal: starting ide...
+
+2019-08-12T13:01:11.213Z - normal: IDE server has started, listening on http://127.0.0.1:44044
+
+2019-08-12T13:01:11.217Z - normal: initialization finished
+
+2019-08-12T13:01:12.246Z - normal: open IDE success
+
+2019-08-12T13:09:32.799Z - info: shutdown preview server

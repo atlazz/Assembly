@@ -10,11 +10,16 @@ const { ccclass, property } = cc._decorator;
 @ccclass
 export default class HomeView extends cc.Component {
     @property(cc.Node)
-    btn_start: cc.Node = null;
-    @property(cc.Node)
     GameView: cc.Node = null;
     @property(cc.Node)
     LvlSelectView: cc.Node = null;
+
+    @property(cc.Node)
+    btn_start: cc.Node = null;
+    @property(cc.Node)
+    logo: cc.Node = null;
+    @property({ type: Array(cc.SpriteFrame), tooltip: 'btn sprite frames', serializable: true })
+    logoFrame: cc.SpriteFrame[] = [];
     @property(cc.Node)
     label_version: cc.Node = null;
 
@@ -22,7 +27,9 @@ export default class HomeView extends cc.Component {
     private lvlSelectScript: LvlSelect;
 
     private initCnt: number = 0;
-    private hasAddlistener: boolean = false;
+
+    private logoSprite: cc.Sprite;
+    private logoFrameIdx: number = 0;
 
     private touchTarget;
 
@@ -31,7 +38,7 @@ export default class HomeView extends cc.Component {
         // clear old list
         try {
             CC_WECHATGAME && wxDownloader['cleanCache'](wxDownloader['getCacheName'](GameView.BaseUrl + 'solution/title.json'));
-        } catch (e) { 
+        } catch (e) {
             console.log("clear cache file err:", e);
         }
     }
@@ -56,6 +63,9 @@ export default class HomeView extends cc.Component {
         // init LvlSelect
         this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect);
 
+        // init animation
+        this.initAnimation();
+
         // load title json data
         cc.loader.load(GameView.BaseUrl + 'solution/title.json', (error, jsonData) => {
             if (error) { console.error('load title json error:', error) };
@@ -64,6 +74,29 @@ export default class HomeView extends cc.Component {
             this.initCnt++;
             this.initCnt >= 2 && this.onInitComplete();
         });
+    }
+
+    private initAnimation() {
+        // logo down
+        this.logo.y = 800;
+        this.logo.runAction(cc.sequence(cc.moveTo(0.4, 0, 250), cc.moveTo(0.1, 0, 300)));
+        // logo frame animation
+        this.logoSprite = this.logo.getComponent(cc.Sprite);
+        if (this.logoFrame.length) {
+            this.schedule(() => {
+                // show
+                this.logoSprite.spriteFrame = this.logoFrame[this.logoFrameIdx];
+                // update
+                this.logoFrameIdx = ++this.logoFrameIdx % this.logoFrame.length;
+            }, 0.5, cc.macro.REPEAT_FOREVER, 0);
+        }
+        // btn scale animation
+        this.btn_start.active = false;
+        this.schedule(() => {
+            this.btn_start.scale = 0;
+            this.btn_start.active = true;
+            this.btn_start.runAction(cc.sequence(cc.scaleTo(0.25, 1.05), cc.scaleTo(0.5, 0.95), cc.scaleTo(0.25, 1)).repeatForever());
+        }, 0.5, 0)
     }
 
     private addBtnListener() {

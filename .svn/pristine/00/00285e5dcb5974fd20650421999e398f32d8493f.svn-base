@@ -1,0 +1,10 @@
+"use strict";
+cc._RF.push(module, '611fd1hQltLk6VI0ZOYZeSu', 'ws');
+// scripts/SDK/ws.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var wsSDK_1 = require("./wsSDK");
+var ws = wsSDK_1.default;
+exports.default = ws;
+
+cc._RF.pop();

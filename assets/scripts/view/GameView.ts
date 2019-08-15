@@ -38,6 +38,8 @@ export default class GameView extends cc.Component {
     @property(cc.Node)
     flash: cc.Node = null;
     @property(cc.Node)
+    tutorialMsg: cc.Node = null;
+    @property(cc.Node)
     mask1: cc.Node = null;
     @property(cc.Node)
     mask2: cc.Node = null;
@@ -75,6 +77,9 @@ export default class GameView extends cc.Component {
     private prevProgress: number;
     private winFlag: boolean;
     private isWin: boolean;
+
+    /** tutorial */
+    private tutorialRotFlag: boolean;
 
     /** load */
     private level: number;
@@ -166,7 +171,7 @@ export default class GameView extends cc.Component {
         this.btn_restart.active = false;
         this.btn_back.active = true;
         this.tips.active = false;
-        this.btn_hint.active = true;
+        this.btn_hint.active = this.level != 1;
         this.flash.active = false;
         this.canTouch = true;
     }
@@ -246,6 +251,7 @@ export default class GameView extends cc.Component {
         this.line_left2.active = false;
         this.line_right2.active = false;
         this.line_rotate.active = false;
+        this.tutorialMsg.active = false;
         this.finger.active = false;
         this.finger.stopAllActions();
         this.unscheduleAllCallbacks();
@@ -255,6 +261,7 @@ export default class GameView extends cc.Component {
         this.hideTutorial();
         switch (lvlIdx) {
             case 1:
+                this.tutorialMsg.active = true;
                 this.mask1.active = true;
                 let item = this.container.getChildByName('3');
                 this.line_left.active = true;
@@ -303,6 +310,7 @@ export default class GameView extends cc.Component {
                 });
                 break;
             case 5:
+                this.tutorialRotFlag = false;
                 this.mask1.active = true;
                 let item3 = this.container.getChildByName('3');
                 this.line_left2.active = true;
@@ -358,6 +366,7 @@ export default class GameView extends cc.Component {
                                 this.finger.stopAllActions();
                                 this.unscheduleAllCallbacks();
                                 // this.unschedule(play1);
+                                this.tutorialRotFlag = true;
                                 this.line_rotate.active = true;
                                 this.line_rotate.x = item2.x;
                                 this.line_rotate.y = item2.y;
@@ -646,6 +655,8 @@ export default class GameView extends cc.Component {
             this.touchID == null && (this.touchID = e.getID());
             if (this.touchID != e.getID()) return;
             if (!this.canTouch) return;
+
+            if (this.level < 5 || (this.level == 5 && !this.tutorialRotFlag)) return;
             if (this.selected && this.items[this.selected]) {
                 // set rot
                 let pos = (e.target.parent as cc.Node).convertToNodeSpaceAR(e.getLocation());
@@ -658,6 +669,8 @@ export default class GameView extends cc.Component {
             e.stopPropagation();
             if (this.touchID != e.getID()) return;
             if (!this.canTouch) return;
+
+            if (this.level < 5 || (this.level == 5 && !this.tutorialRotFlag)) return;
             if (this.selected && this.items[this.selected]) {
                 // update rot
                 let pos = (e.target.parent as cc.Node).convertToNodeSpaceAR(e.getLocation());
@@ -679,6 +692,8 @@ export default class GameView extends cc.Component {
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             if (!this.canTouch) return;
+            
+            if (this.level < 5 || (this.level == 5 && !this.tutorialRotFlag)) return;
             if (this.selected && this.items[this.selected]) {
                 this.winCheck();
             }
@@ -688,6 +703,8 @@ export default class GameView extends cc.Component {
             if (this.touchID != e.getID()) return;
             this.touchID = null;
             if (!this.canTouch) return;
+            
+            if (this.level < 5 || (this.level == 5 && !this.tutorialRotFlag)) return;
             if (this.selected && this.items[this.selected]) {
                 this.winCheck();
             }

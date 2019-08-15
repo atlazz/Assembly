@@ -1,0 +1,200 @@
+(function() {"use strict";var __module = CC_EDITOR ? module : {exports:{}};var __filename = 'preview-scripts/assets/scripts/component/Ad.js';var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} : function (request) {return cc.require(request, __filename);};function __define (exports, require, module) {"use strict";
+cc._RF.push(module, '51918kAgyxNQKDOyGTjLWyP', 'Ad', __filename);
+// scripts/component/Ad.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var wx_1 = require("../SDK/wx");
+var ws_1 = require("../SDK/ws");
+var Global_1 = require("../Global");
+var hasVideo = true;
+var currentBannerPos = null;
+var clickBannerCount = 0;
+var banners = {}; // list of banner obj
+var bannerUid = {}; // list of unit id
+var bannerCnt_home = {};
+var bannerCnt_treasure = {};
+var currBannerIdx;
+exports.randomlyGetBanner = function (pos) {
+    if (!CC_WECHATGAME)
+        return;
+    // 低版本SDK，无此方法返回
+    if (!wx_1.default.createBannerAd)
+        return;
+    // initialize
+    if (Object.keys(bannerUid).length === 0) {
+        for (var i = 1; i <= Global_1.default.config.banner_number; i++) {
+            bannerUid[i] = Global_1.default.config.banner[i];
+            console.log("init uid: ", i, bannerUid[i]);
+            banners[i] = exports.wxCreatBanner(bannerUid[i]);
+            console.log("init bannerAD: ", i, banners[i]);
+            bannerCnt_home[i] = 0;
+            bannerCnt_treasure[i] = 0;
+            // onError, 不写上不给show...
+            banners[i].onError(function (errMsg) {
+                console.log("banner onError :", errMsg);
+            });
+        }
+    }
+    // randomly select
+    currBannerIdx = Math.ceil(Math.random() * Global_1.default.config.banner_number);
+    /** 首页 */
+    if (pos == "home") {
+        // check counter
+        if (bannerCnt_home[currBannerIdx] >= Global_1.default.config.show_number) {
+            // recreate
+            banners[currBannerIdx] && banners[currBannerIdx].destroy();
+            banners[currBannerIdx] = exports.wxCreatBanner(bannerUid[currBannerIdx]);
+            bannerCnt_home[currBannerIdx] = 0;
+        }
+        // update counter
+        bannerCnt_home[currBannerIdx]++;
+    }
+};
+exports.wxCreatBanner = function (uid) {
+    if (!CC_WECHATGAME || !wx_1.default.createBannerAd)
+        return;
+    var systemInfo = wx_1.default.getSystemInfoSync();
+    var screenHeight = systemInfo.screenHeight;
+    var screenWidth = systemInfo.screenWidth;
+    var adWidth = Math.max(300, screenWidth * 300 / 350); // * 0.86
+    var adHeight = adWidth * 0.348;
+    var top = screenHeight - adHeight;
+    var left = (screenWidth - adWidth) / 2;
+    return wx_1.default.createBannerAd({
+        adUnitId: uid,
+        style: {
+            left: left,
+            top: top,
+            width: adWidth,
+            height: adHeight,
+        }
+    });
+};
+exports.setStyle = function (banner, isMini, bannerTop) {
+    if (!CC_WECHATGAME)
+        return;
+    if (!banner)
+        return;
+    var systemInfo = wx_1.default.getSystemInfoSync();
+    var screenHeight = systemInfo.screenHeight;
+    var screenWidth = systemInfo.screenWidth;
+    var adWidth = screenWidth;
+    if (isMini) {
+        adWidth = Math.max(300, screenWidth * 300 / 350); // * 0.86
+    }
+    var adHeight = adWidth * 0.348;
+    // defalut at bottom
+    var top = screenHeight - adHeight;
+    // over write
+    if (bannerTop !== -1) {
+        top = bannerTop / cc.winSize.height * screenHeight;
+    }
+    var left = (screenWidth - adWidth) / 2;
+    banner.style.left = left;
+    banner.style.top = top;
+    banner.style.width = adWidth;
+    banner.style.height = adHeight;
+};
+exports.showBanner = function (isMini, bannerTop) {
+    if (isMini === void 0) { isMini = false; }
+    if (bannerTop === void 0) { bannerTop = -1; }
+    if (!CC_WECHATGAME)
+        return;
+    exports.setStyle(banners[currBannerIdx], isMini, bannerTop);
+    banners[currBannerIdx] && banners[currBannerIdx].show();
+    console.log("show banner uid: ", currBannerIdx, "bannerAD: ", banners[currBannerIdx]);
+};
+exports.hideBanner = function () {
+    if (!CC_WECHATGAME)
+        return;
+    for (var i = 1; i <= Object.keys(banners).length; i++) {
+        banners[i] && banners[i].hide();
+    }
+    // banners[currBannerIdx] && banners[currBannerIdx].hide();
+};
+exports.refreshCurrentBanner = function () {
+    clickBannerCount++;
+    if (currentBannerPos && clickBannerCount >= Global_1.default.config.banner_click_time) {
+        clickBannerCount = 0;
+        exports.posShowBanner(currentBannerPos, true);
+    }
+};
+exports.hasVideoAd = function () {
+    return hasVideo;
+};
+exports.posShowBanner = function (pos, force) {
+    if (force === void 0) { force = false; }
+    if (!CC_WECHATGAME)
+        return;
+    var systemInfo = wx_1.default.getSystemInfoSync();
+    var screenHeight = systemInfo.screenHeight;
+    var screenWidth = systemInfo.screenWidth;
+    var adWidth = Math.max(300, screenWidth * 300 / 350); // * 0.86
+    var adHeight = adWidth * 0.348;
+    var top = screenHeight - adHeight;
+    var left = (screenWidth - adWidth) / 2;
+    currentBannerPos = pos;
+    return ws_1.default.createBanner({
+        pos: pos,
+        style: {
+            left: left,
+            top: top,
+            width: adWidth,
+            height: adHeight,
+        },
+        force: force,
+    });
+};
+exports.posHideBanner = function (pos) {
+    if (!CC_WECHATGAME)
+        return;
+    currentBannerPos = null;
+    ws_1.default.closeBanner(pos);
+};
+exports.posShowVideo = function (pos, onErrorCallback, onCloseCallback) {
+    if (CC_WECHATGAME && ws_1.default.createVideo) {
+        ws_1.default.createVideo({
+            pos: pos,
+            success: function (res) {
+                onCloseCallback && onCloseCallback(res);
+            },
+            fail: function (res) {
+                hasVideo = false;
+                console.log('NO VIDEO AD');
+                console.log("error res: ", res);
+                if (Global_1.default.gameData.videoCount <= 11) {
+                    ws_1.default.traceEvent("errVideoCnt_" + Global_1.default.gameData.videoCount);
+                }
+                else {
+                    // 11次以上
+                    ws_1.default.traceEvent("errVideoCnt_11");
+                }
+                if (res && res.errMsg) {
+                    ws_1.default.traceEvent("errCode_" + res.errCode);
+                    console.log("errCode: " + res.errCode);
+                    console.log("errMsg: " + res.errMsg);
+                }
+                onErrorCallback && onErrorCallback();
+            }
+        });
+    }
+    else {
+        hasVideo = false;
+        console.log('NO VIDEO AD');
+        onErrorCallback && onErrorCallback();
+    }
+};
+
+cc._RF.pop();
+        }
+        if (CC_EDITOR) {
+            __define(__module.exports, __require, __module);
+        }
+        else {
+            cc.registerModuleFunc(__filename, function () {
+                __define(__module.exports, __require, __module);
+            });
+        }
+        })();
+        //# sourceMappingURL=Ad.js.map
+        

@@ -1,0 +1,27 @@
+(function() {"use strict";var __module = CC_EDITOR ? module : {exports:{}};var __filename = 'preview-scripts/assets/scripts/Const.js';var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} : function (request) {return cc.require(request, __filename);};function __define (exports, require, module) {"use strict";
+cc._RF.push(module, 'c9ad1AMwpJJgbaZNmgGQGMg', 'Const', __filename);
+// scripts/Const.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/** version */
+exports.VERSION = "1.0.2";
+exports.State = {
+    PLAYING: 1,
+};
+exports.TutorialLvl = [1, 5];
+exports.WinDeltaDist = 50;
+exports.WinDeltaAngle = 30;
+
+cc._RF.pop();
+        }
+        if (CC_EDITOR) {
+            __define(__module.exports, __require, __module);
+        }
+        else {
+            cc.registerModuleFunc(__filename, function () {
+                __define(__module.exports, __require, __module);
+            });
+        }
+        })();
+        //# sourceMappingURL=Const.js.map
+        

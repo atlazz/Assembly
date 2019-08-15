@@ -1,0 +1,224 @@
+(function() {"use strict";var __module = CC_EDITOR ? module : {exports:{}};var __filename = 'preview-scripts/assets/scripts/component/ScrollViewBetter.js';var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} : function (request) {return cc.require(request, __filename);};function __define (exports, require, module) {"use strict";
+cc._RF.push(module, '7837e+yGXVLAZgbsUsvwxKH', 'ScrollViewBetter', __filename);
+// scripts/component/ScrollViewBetter.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
+var ScrollViewBetter = /** @class */ (function (_super) {
+    __extends(ScrollViewBetter, _super);
+    function ScrollViewBetter() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.itemPrefab = null;
+        _this.contentNode = null;
+        _this.viewNode = null;
+        _this.spacing = 0; // 间隔
+        _this.firstPadding = 0;
+        _this.lastPadding = 0;
+        _this.vertical = true; // 默认垂直模式，false为水平模式
+        _this.topToBottom = true; // 垂直模式默认滚动到顶部 从上到下
+        _this.leftToRight = true; // 水平模式默认滚动到左侧 从左到右
+        return _this;
+    }
+    ScrollViewBetter.prototype.createItems = function (itemListSize, initItemCallback, startIndex) {
+        var _this = this;
+        if (startIndex === void 0) { startIndex = 0; }
+        //item宽高
+        this.itemHeight = this.itemPrefab.data.height;
+        this.itemWidth = this.itemPrefab.data.width;
+        //初始化item回调
+        this.initItemCallback = initItemCallback;
+        //item列表大小
+        this.itemListSize = itemListSize;
+        this.contentNode.removeAllChildren();
+        if (this.vertical) { //垂直
+            // 设置内容高度
+            this.contentNode.height = this.firstPadding + this.itemListSize * (this.itemHeight + this.spacing) + this.lastPadding;
+            this.contentNode.width = this.itemListSize * this.itemWidth;
+            this.innerItemCount = Math.floor(this.viewNode.height / (this.itemHeight + this.spacing)) + 2;
+        }
+        else { //水平
+            // 设置内容高度
+            this.contentNode.height = this.itemListSize * this.itemHeight;
+            this.contentNode.width = this.firstPadding + this.itemListSize * (this.itemWidth + this.spacing) + this.lastPadding;
+            this.innerItemCount = Math.floor(this.viewNode.width / (this.itemWidth + this.spacing)) + 2;
+        }
+        this.outerItemCount = Math.floor(this.innerItemCount / 2) * 2;
+        this.totalItemCount = this.innerItemCount + this.outerItemCount;
+        //第一个显示的item索引
+        if (startIndex >= itemListSize) {
+            startIndex = itemListSize - 1;
+        }
+        if (startIndex < 0) {
+            startIndex = 0;
+        }
+        this.startItemIndex = startIndex;
+        this.firstItemIndex = startIndex - this.outerItemCount / 2;
+        if (this.vertical) {
+            if (this.topToBottom) {
+                this.contentNode.y = this.viewNode.height / 2 - this.contentNode.height / 2 + startIndex * (this.itemHeight + this.spacing);
+            }
+            else {
+                this.contentNode.y = -(this.viewNode.height / 2 - this.contentNode.height / 2 + startIndex * (this.itemHeight + this.spacing));
+            }
+        }
+        else {
+            if (this.leftToRight) {
+                this.contentNode.x = -(this.viewNode.width / 2 - this.contentNode.width / 2 + startIndex * (this.itemWidth + this.spacing));
+            }
+            else {
+                this.contentNode.x = this.viewNode.width / 2 - this.contentNode.width / 2 + startIndex * (this.itemWidth + this.spacing);
+            }
+        }
+        // 遮罩
+        var viewNodeWorldPos = this.viewNode.convertToWorldSpaceAR(cc.v2(0, 0));
+        this.topLimitPosY = viewNodeWorldPos.y + this.totalItemCount * (this.itemHeight + this.spacing) / 2;
+        this.bottomLimitPosY = viewNodeWorldPos.y - this.totalItemCount * (this.itemHeight + this.spacing) / 2;
+        this.leftLimitPosX = viewNodeWorldPos.x - this.totalItemCount * (this.itemWidth + this.spacing) / 2;
+        this.rightLimitPosX = viewNodeWorldPos.x + this.totalItemCount * (this.itemWidth + this.spacing) / 2;
+        this.itemNodeList = [];
+        for (var i = this.firstItemIndex; i < this.totalItemCount + this.firstItemIndex; i++) {
+            var itemNode = cc.instantiate(this.itemPrefab);
+            itemNode.parent = this.contentNode;
+            this.setItem(itemNode, i);
+            this.itemNodeList.push(itemNode);
+        }
+        this.node.off('scrolling');
+        this.node.on('scrolling', function () {
+            _this.updateItemsPos();
+        });
+    };
+    ScrollViewBetter.prototype.setItem = function (itemNode, index) {
+        // 垂直滚动
+        if (this.vertical) {
+            // 从上到下排序
+            if (this.topToBottom) {
+                itemNode.y = this.contentNode.height / 2 - (this.firstPadding + index * (this.itemHeight + this.spacing) + this.itemHeight / 2);
+            }
+            // 从下到上排序                
+            else {
+                itemNode.y = -(this.contentNode.height / 2 - (this.firstPadding + index * (this.itemHeight + this.spacing) + this.itemHeight / 2));
+            }
+        }
+        // 水平滚动
+        else {
+            // 从左往右排序
+            if (this.leftToRight) {
+                itemNode.x = -(this.contentNode.width / 2 - (this.firstPadding + index * (this.itemWidth + this.spacing) + this.itemWidth / 2));
+            }
+            // 从右往左排序                
+            else {
+                itemNode.x = this.contentNode.width / 2 - (this.firstPadding + index * (this.itemWidth + this.spacing) + this.itemWidth / 2);
+            }
+        }
+        if (index < 0 || index >= this.itemListSize) {
+            itemNode.active = false;
+        }
+        else {
+            itemNode.active = true;
+            this.initItemCallback(itemNode, index);
+        }
+    };
+    ScrollViewBetter.prototype.updateItemsContent = function () {
+        var _this = this;
+        this.itemNodeList.forEach(function (itemNode, index) {
+            itemNode.active && _this.initItemCallback(itemNode, index + _this.firstItemIndex);
+        });
+    };
+    ScrollViewBetter.prototype.updateItemsPos = function () {
+        if (!this.itemNodeList || !this.itemNodeList.length)
+            return;
+        var firstItem = this.itemNodeList[0];
+        var lastItem = this.itemNodeList[this.itemNodeList.length - 1];
+        //获取最上item当前的坐标
+        var firstPos = firstItem.convertToWorldSpaceAR(cc.v2(0, 0));
+        //获取最下item当前的坐标
+        var lastPos = lastItem.convertToWorldSpaceAR(cc.v2(0, 0));
+        //检测上item是否超过边界
+        var firstFlag = false, lastFlag = false;
+        // 垂直滚动
+        if (this.vertical) {
+            // 从上到下排序
+            if (this.topToBottom) {
+                firstFlag = firstPos.y > this.topLimitPosY;
+                lastFlag = lastPos.y < this.bottomLimitPosY;
+            }
+            // 从下到上排序
+            else {
+                firstFlag = firstPos.y < this.bottomLimitPosY;
+                lastFlag = lastPos.y > this.topLimitPosY;
+            }
+        }
+        // 水平滚动
+        else {
+            // 从左往右排序
+            if (this.leftToRight) {
+                firstFlag = firstPos.x < this.leftLimitPosX;
+                lastFlag = lastPos.x > this.rightLimitPosX;
+            }
+            // 从右往左排序
+            else {
+                firstFlag = firstPos.x > this.rightLimitPosX;
+                lastFlag = lastPos.x < this.leftLimitPosX;
+            }
+        }
+        if (firstFlag) {
+            this.setItem(firstItem, this.firstItemIndex + this.totalItemCount);
+            this.firstItemIndex++;
+            var itemNode = this.itemNodeList.shift();
+            this.itemNodeList.push(itemNode);
+        }
+        //检测下item是否超过边界
+        else if (lastFlag) {
+            this.setItem(lastItem, this.firstItemIndex - 1);
+            this.firstItemIndex--;
+            var itemNode = this.itemNodeList.pop();
+            this.itemNodeList.unshift(itemNode);
+        }
+    };
+    __decorate([
+        property(cc.Prefab)
+    ], ScrollViewBetter.prototype, "itemPrefab", void 0);
+    __decorate([
+        property(cc.Node)
+    ], ScrollViewBetter.prototype, "contentNode", void 0);
+    __decorate([
+        property(cc.Node)
+    ], ScrollViewBetter.prototype, "viewNode", void 0);
+    __decorate([
+        property
+    ], ScrollViewBetter.prototype, "spacing", void 0);
+    __decorate([
+        property
+    ], ScrollViewBetter.prototype, "firstPadding", void 0);
+    __decorate([
+        property
+    ], ScrollViewBetter.prototype, "lastPadding", void 0);
+    __decorate([
+        property
+    ], ScrollViewBetter.prototype, "vertical", void 0);
+    __decorate([
+        property
+    ], ScrollViewBetter.prototype, "topToBottom", void 0);
+    __decorate([
+        property
+    ], ScrollViewBetter.prototype, "leftToRight", void 0);
+    ScrollViewBetter = __decorate([
+        ccclass
+    ], ScrollViewBetter);
+    return ScrollViewBetter;
+}(cc.Component));
+exports.default = ScrollViewBetter;
+
+cc._RF.pop();
+        }
+        if (CC_EDITOR) {
+            __define(__module.exports, __require, __module);
+        }
+        else {
+            cc.registerModuleFunc(__filename, function () {
+                __define(__module.exports, __require, __module);
+            });
+        }
+        })();
+        //# sourceMappingURL=ScrollViewBetter.js.map
+        

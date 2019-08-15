@@ -1,0 +1,322 @@
+2019-08-14T02:08:15.072Z - normal: Load ~/.CocosCreator/settings.json
+2019-08-14T02:08:16.212Z - normal: Initializing Asset Database
+2019-08-14T02:08:16.214Z - normal: checking language setting...
+2019-08-14T02:08:16.214Z - normal: Language: zh
+2019-08-14T02:08:16.948Z - success: preview server running at http://localhost:7456
+2019-08-14T02:08:16.950Z - success: protocol editor-framework registered
+2019-08-14T02:08:16.950Z - success: protocol app registered
+2019-08-14T02:08:16.950Z - success: protocol theme registered
+2019-08-14T02:08:16.950Z - success: protocol packages registered
+2019-08-14T02:08:16.950Z - success: protocol uuid registerred
+2019-08-14T02:08:16.950Z - success: protocol db registerred
+2019-08-14T02:08:16.950Z - success: protocol thumbnail registerred
+2019-08-14T02:08:16.950Z - success: protocol unpack registerred
+2019-08-14T02:08:16.951Z - success: protocol disable-commonjs registerred
+2019-08-14T02:08:17.144Z - normal: connected!
+2019-08-14T02:08:17.148Z - normal: Check project F:\LayaProjects\Assembly
+2019-08-14T02:08:17.153Z - normal: Initializing project F:\LayaProjects\Assembly
+2019-08-14T02:08:17.494Z - normal: Initializing Cocos2d
+2019-08-14T02:08:18.144Z - normal: Initializing engine extends
+2019-08-14T02:08:18.167Z - success: asset-db-debugger loaded
+2019-08-14T02:08:18.171Z - success: baidu-adapter loaded
+2019-08-14T02:08:18.174Z - success: color-picker loaded
+2019-08-14T02:08:18.251Z - success: fb-audience-network loaded
+2019-08-14T02:08:18.303Z - success: fb-live-stream loaded
+2019-08-14T02:08:18.319Z - success: google-play-instant loaded
+2019-08-14T02:08:18.336Z - success: huawei-runtime loaded
+2019-08-14T02:08:18.679Z - success: cpk-publish loaded
+2019-08-14T02:08:18.683Z - success: jsb-adapter loaded
+2019-08-14T02:08:18.699Z - success: oppo-runtime loaded
+2019-08-14T02:08:18.707Z - success: package-manager loaded
+2019-08-14T02:08:18.850Z - success: qqplay-adapter loaded
+2019-08-14T02:08:18.857Z - success: runtime-dev-tools loaded
+2019-08-14T02:08:18.869Z - success: sdkbox loaded
+2019-08-14T02:08:18.887Z - success: tester loaded
+2019-08-14T02:08:18.902Z - success: ui-grid loaded
+2019-08-14T02:08:18.909Z - success: ui-kit-preview-extra loaded
+2019-08-14T02:08:18.918Z - success: ui-kit-preview loaded
+2019-08-14T02:08:18.921Z - success: ui-kit loaded
+2019-08-14T02:08:18.928Z - success: ui-tree loaded
+2019-08-14T02:08:18.949Z - success: vivo-runtime loaded
+2019-08-14T02:08:18.950Z - success: weapp-adapter loaded
+2019-08-14T02:08:18.954Z - success: xiaomi-adapter loaded
+2019-08-14T02:08:18.993Z - success: assets loaded
+2019-08-14T02:08:18.995Z - success: builder loaded
+2019-08-14T02:08:19.219Z - success: cocos-services loaded
+2019-08-14T02:08:19.222Z - success: console loaded
+2019-08-14T02:08:19.251Z - success: fb-instant-games loaded
+2019-08-14T02:08:19.252Z - success: google-instant-games loaded
+2019-08-14T02:08:19.255Z - success: hierarchy loaded
+2019-08-14T02:08:19.257Z - success: inspector loaded
+2019-08-14T02:08:19.258Z - success: keystore loaded
+2019-08-14T02:08:19.261Z - success: node-library loaded
+2019-08-14T02:08:19.262Z - success: package-asset loaded
+2019-08-14T02:08:19.264Z - success: preferences loaded
+2019-08-14T02:08:19.266Z - success: project-exporter loaded
+2019-08-14T02:08:19.268Z - success: project-importer loaded
+2019-08-14T02:08:19.269Z - success: project-settings loaded
+2019-08-14T02:08:19.272Z - success: scene loaded
+2019-08-14T02:08:19.273Z - success: simulator-debugger loaded
+2019-08-14T02:08:19.274Z - success: sprite-editor loaded
+2019-08-14T02:08:19.276Z - success: store loaded
+2019-08-14T02:08:19.279Z - success: timeline loaded
+2019-08-14T02:08:19.285Z - success: xiaomi-runtime loaded
+2019-08-14T02:08:19.293Z - success: cc-inspector loaded
+2019-08-14T02:08:19.302Z - success: clean loaded
+2019-08-14T02:08:21.189Z - normal: Loading packages
+2019-08-14T02:08:21.193Z - normal: Watching packages
+2019-08-14T02:08:21.497Z - normal: Run Application
+2019-08-14T02:08:21.782Z - info: Cocos Services load base data!
+2019-08-14T02:08:29.657Z - normal: Start building with options : {
+  "actualPlatform": "wechatgame",
+  "android-instant": {
+    "REMOTE_SERVER_ROOT": "",
+    "host": "",
+    "pathPattern": "",
+    "recordPath": "",
+    "scheme": "https",
+    "skipRecord": false
+  },
+  "apiLevel": "",
+  "appABIs": [],
+  "appBundle": false,
+  "baidugame": {
+    "REMOTE_SERVER_ROOT": "",
+    "appid": "testappid",
+    "orientation": "portrait",
+    "subContext": ""
+  },
+  "buildPath": "F:\\LayaProjects\\Assembly\\build",
+  "debug": false,
+  "dest": "F:\\LayaProjects\\Assembly\\build\\wechatgame",
+  "embedWebDebugger": false,
+  "encryptJs": true,
+  "excludeScenes": [],
+  "excludedModules": [
+    "Canvas Renderer",
+    "Dynamic Atlas",
+    "TiledMap",
+    "Spine Skeleton",
+    "DragonBones",
+    "RichText",
+    "MotionStreak",
+    "Toggle",
+    "PageView",
+    "PageViewIndicator",
+    "Slider",
+    "EditBox",
+    "VideoPlayer",
+    "WebView",
+    "Collider",
+    "Physics",
+    "StudioComponent",
+    "Intersection",
+    "Native Socket"
+  ],
+  "fb-instant-games": {},
+  "includeSDKBox": false,
+  "inlineSpriteFrames": true,
+  "inlineSpriteFrames_native": true,
+  "md5Cache": false,
+  "mergeStartScene": false,
+  "optimizeHotUpdate": false,
+  "orientation": {
+    "landscapeLeft": true,
+    "landscapeRight": true,
+    "portrait": false,
+    "upsideDown": false
+  },
+  "packageName": "org.cocos2d.Assembly",
+  "platform": "wechatgame",
+  "previewHeight": "720",
+  "previewWidth": "1280",
+  "qqplay": {
+    "REMOTE_SERVER_ROOT": "",
+    "orientation": "portrait",
+    "zip": false
+  },
+  "scenes": [
+    "8e1fb3c1-feac-4478-9efb-45893ca54b96"
+  ],
+  "sourceMaps": false,
+  "startScene": "8e1fb3c1-feac-4478-9efb-45893ca54b96",
+  "template": "link",
+  "title": "Assembly",
+  "useDebugKeystore": true,
+  "vsVersion": "auto",
+  "webOrientation": "auto",
+  "wechatgame": {
+    "REMOTE_SERVER_ROOT": "https://coolant.miniant.cn/Assembly",
+    "appid": "wx76968f239ab26a16",
+    "orientation": "portrait",
+    "separate_engine": false,
+    "subContext": ""
+  },
+  "xxteaKey": "f2ffe59c-b661-48",
+  "zipCompressJs": true,
+  "project": "F:\\LayaProjects\\Assembly",
+  "projectName": "Assembly",
+  "debugBuildWorker": false
+}
+2019-08-14T02:08:29.659Z - normal: Building F:\LayaProjects\Assembly
+2019-08-14T02:08:29.659Z - normal: Destination F:\LayaProjects\Assembly\build\wechatgame
+2019-08-14T02:08:29.727Z - normal: Delete F:\LayaProjects\Assembly\build\wechatgame\subpackages/**/*,F:\LayaProjects\Assembly\build\wechatgame\**\*
+2019-08-14T02:08:32.619Z - normal: Start building assets
+2019-08-14T02:08:32.619Z - normal: Start spawn build-worker
+2019-08-14T02:08:33.111Z - normal: Finish spawn build-worker
+2019-08-14T02:08:33.111Z - normal: Start init build-worker
+2019-08-14T02:08:35.305Z - normal: Finish init build-worker
+2019-08-14T02:08:35.305Z - normal: Start build-assets in worker
+2019-08-14T02:08:35.844Z - normal: Finish build-assets in worker
+2019-08-14T02:08:35.849Z - normal: Finish building assets
+2019-08-14T02:08:35.877Z - normal: Start building plugin scripts
+2019-08-14T02:08:35.885Z - normal: Generating main.js from E:\CocosCreator\resources\static\build-templates\shares\main.js
+2019-08-14T02:08:36.953Z - normal: Built to "F:\LayaProjects\Assembly\build\wechatgame" successfully
+2019-08-14T02:08:39.956Z - normal: Initializing...
+
+2019-08-14T02:08:39.967Z - normal: idePortFile: C:\Users\win10\AppData\Local\微信开发者工具\User Data\Default\.ide
+
+2019-08-14T02:08:40.978Z - normal: starting ide...
+
+2019-08-14T02:08:42.930Z - normal: IDE server has started, listening on http://127.0.0.1:65198
+
+2019-08-14T02:08:42.932Z - normal: initialization finished
+
+2019-08-14T02:08:43.730Z - normal: open IDE success
+
+2019-08-14T02:11:03.261Z - error: scene 没有保存，请先保存相关信息再进行构建。
+    at Editor.Ipc.sendToPanel (E:\CocosCreator\resources\app.asar\editor\builtin\builder\panel\builder.js:1:7834)
+    at EventEmitter.o.on.n (E:\CocosCreator\resources\app.asar\editor-framework\lib\renderer\ipc.js:1:3757)
+    at emitMany (events.js:127:13)
+    at EventEmitter.emit (events.js:204:7)
+2019-08-14T02:11:10.326Z - normal: Start building with options : {
+  "actualPlatform": "wechatgame",
+  "android-instant": {
+    "REMOTE_SERVER_ROOT": "",
+    "host": "",
+    "pathPattern": "",
+    "recordPath": "",
+    "scheme": "https",
+    "skipRecord": false
+  },
+  "apiLevel": "",
+  "appABIs": [],
+  "appBundle": false,
+  "baidugame": {
+    "REMOTE_SERVER_ROOT": "",
+    "appid": "testappid",
+    "orientation": "portrait",
+    "subContext": ""
+  },
+  "buildPath": "F:\\LayaProjects\\Assembly\\build",
+  "debug": false,
+  "dest": "F:\\LayaProjects\\Assembly\\build\\wechatgame",
+  "embedWebDebugger": false,
+  "encryptJs": true,
+  "excludeScenes": [],
+  "excludedModules": [
+    "Canvas Renderer",
+    "Dynamic Atlas",
+    "TiledMap",
+    "Spine Skeleton",
+    "DragonBones",
+    "RichText",
+    "MotionStreak",
+    "Toggle",
+    "PageView",
+    "PageViewIndicator",
+    "Slider",
+    "EditBox",
+    "VideoPlayer",
+    "WebView",
+    "Collider",
+    "Physics",
+    "StudioComponent",
+    "Intersection",
+    "Native Socket"
+  ],
+  "fb-instant-games": {},
+  "includeSDKBox": false,
+  "inlineSpriteFrames": true,
+  "inlineSpriteFrames_native": true,
+  "md5Cache": false,
+  "mergeStartScene": false,
+  "optimizeHotUpdate": false,
+  "orientation": {
+    "landscapeLeft": true,
+    "landscapeRight": true,
+    "portrait": false,
+    "upsideDown": false
+  },
+  "packageName": "org.cocos2d.Assembly",
+  "platform": "wechatgame",
+  "previewHeight": "720",
+  "previewWidth": "1280",
+  "qqplay": {
+    "REMOTE_SERVER_ROOT": "",
+    "orientation": "portrait",
+    "zip": false
+  },
+  "scenes": [
+    "8e1fb3c1-feac-4478-9efb-45893ca54b96"
+  ],
+  "sourceMaps": false,
+  "startScene": "8e1fb3c1-feac-4478-9efb-45893ca54b96",
+  "template": "link",
+  "title": "Assembly",
+  "useDebugKeystore": true,
+  "vsVersion": "auto",
+  "webOrientation": "auto",
+  "wechatgame": {
+    "REMOTE_SERVER_ROOT": "https://coolant.miniant.cn/Assembly",
+    "appid": "wx76968f239ab26a16",
+    "orientation": "portrait",
+    "separate_engine": false,
+    "subContext": ""
+  },
+  "xxteaKey": "f2ffe59c-b661-48",
+  "zipCompressJs": true,
+  "project": "F:\\LayaProjects\\Assembly",
+  "projectName": "Assembly",
+  "debugBuildWorker": false
+}
+2019-08-14T02:11:10.328Z - normal: Building F:\LayaProjects\Assembly
+2019-08-14T02:11:10.328Z - normal: Destination F:\LayaProjects\Assembly\build\wechatgame
+2019-08-14T02:11:10.329Z - normal: Delete F:\LayaProjects\Assembly\build\wechatgame\subpackages/**/*,F:\LayaProjects\Assembly\build\wechatgame\**\*
+2019-08-14T02:11:14.115Z - normal: Start building assets
+2019-08-14T02:11:14.115Z - normal: Start spawn build-worker
+2019-08-14T02:11:14.645Z - normal: Finish spawn build-worker
+2019-08-14T02:11:14.645Z - normal: Start init build-worker
+2019-08-14T02:11:19.160Z - normal: Finish init build-worker
+2019-08-14T02:11:19.160Z - normal: Start build-assets in worker
+2019-08-14T02:11:19.895Z - normal: Finish build-assets in worker
+2019-08-14T02:11:19.903Z - normal: Finish building assets
+2019-08-14T02:11:19.937Z - normal: Start building plugin scripts
+2019-08-14T02:11:19.953Z - normal: Generating main.js from E:\CocosCreator\resources\static\build-templates\shares\main.js
+2019-08-14T02:11:20.867Z - normal: Built to "F:\LayaProjects\Assembly\build\wechatgame" successfully
+2019-08-14T02:11:22.492Z - normal: Initializing...
+
+2019-08-14T02:11:22.505Z - normal: idePortFile: C:\Users\win10\AppData\Local\微信开发者工具\User Data\Default\.ide
+
+2019-08-14T02:11:23.521Z - normal: starting ide...
+
+2019-08-14T02:11:25.650Z - normal: IDE server has started, listening on http://127.0.0.1:15781
+
+2019-08-14T02:11:25.651Z - normal: initialization finished
+
+2019-08-14T02:11:26.455Z - normal: open IDE success
+
+2019-08-14T03:02:35.237Z - success: clean unloaded
+2019-08-14T03:02:35.273Z - success: clean loaded
+2019-08-14T03:02:35.502Z - success: cc-inspector unloaded
+2019-08-14T03:02:35.953Z - success: cc-inspector loaded
+2019-08-14T03:02:35.967Z - error: TypeError: Cannot read property 'level' of undefined
+    at Object.exports.add (E:\CocosCreator\resources\app.asar\editor\builtin\assets\panel\utils\cache.js:1:1717)
+    at Object.exports.add (E:\CocosCreator\resources\app.asar\editor\builtin\assets\panel\utils\operation.js:1:2810)
+    at s.forEach.e (E:\CocosCreator\resources\app.asar\editor\builtin\assets\panel\index.js:1:3408)
+    at Array.forEach (native)
+    at HTMLElement.asset-db:assets-created (E:\CocosCreator\resources\app.asar\editor\builtin\assets\panel\index.js:1:3245)
+    at EventEmitter.i.function.t.on.e (E:\CocosCreator\resources\app.asar\editor-framework\lib\renderer\ui\panel\frame.js:1:3303)
+    at emitTwo (events.js:106:13)
+    at EventEmitter.emit (events.js:194:7)
+2019-08-14T03:02:37.620Z - info: shutdown preview server

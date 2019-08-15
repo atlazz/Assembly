@@ -1,0 +1,8 @@
+"use strict";
+cc._RF.push(module, 'bb83fKjnlFMP6AOe3VU5hX1', 'wx');
+// scripts/SDK/wx.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = window['wx'];
+
+cc._RF.pop();

@@ -1,0 +1,233 @@
+(function() {"use strict";var __module = CC_EDITOR ? module : {exports:{}};var __filename = 'preview-scripts/assets/scripts/view/OverView.js';var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} : function (request) {return cc.require(request, __filename);};function __define (exports, require, module) {"use strict";
+cc._RF.push(module, 'bede3ouYsFK26zPwWczAa72', 'OverView', __filename);
+// scripts/view/OverView.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Global_1 = require("../Global");
+var GameView_1 = require("./GameView");
+var LvlSelect_1 = require("./LvlSelect");
+var AudioMgr_1 = require("../component/AudioMgr");
+var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
+var OverView = /** @class */ (function (_super) {
+    __extends(OverView, _super);
+    function OverView() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.HomeView = null;
+        _this.GameView = null;
+        _this.LvlSelectView = null;
+        _this.btn_back = null;
+        _this.btn_next = null;
+        _this.lvlLabel = null;
+        _this.tips = null;
+        _this.title = null;
+        _this.titleBg = null;
+        _this.center = null;
+        _this.left = null;
+        _this.right = null;
+        _this.crown = null;
+        _this.leftLeaf = null;
+        _this.rightLeaf = null;
+        _this.label = null;
+        return _this;
+        // update (dt) {}
+    }
+    OverView.prototype.start = function () {
+        // get script
+        this.gameScript = this.GameView.getComponent(GameView_1.default);
+        // add listener
+        this.addBtnListener();
+    };
+    OverView.prototype.onEnable = function () {
+        // update label
+        this.lvlLabel.getComponent(cc.Label).string = (Global_1.default.gameData.level - 1).toString();
+        // reset
+        AudioMgr_1.default.instance.closeAll();
+        this.btn_next.active = false;
+        this.btn_back.active = false;
+        this.title.active = false;
+        this.titleBg.active = false;
+        // 完成图动效
+        this.tips.active = true;
+        this.tips.scale = 1;
+        this.tips.runAction(cc.sequence(cc.scaleTo(0.1, 1.2), cc.scaleTo(0.2, 0.85)));
+        // play win animation
+        this.schedule(this.playEff, 0.4, 0);
+    };
+    OverView.prototype.playEff = function () {
+        var _this = this;
+        // play sound
+        this.schedule(function () { return AudioMgr_1.default.instance.play('starin'); }, 0.1, 0);
+        // play win animation
+        this.title.active = true;
+        this.center.scaleX = 0;
+        this.center.runAction(cc.sequence(cc.scaleTo(0.2, 1.2), cc.scaleTo(0.05, 1)));
+        this.label.scaleX = 0;
+        this.label.runAction(cc.sequence(cc.scaleTo(0.2, 1.2), cc.scaleTo(0.05, 1)));
+        this.left.x = 0;
+        this.left.runAction(cc.sequence(cc.moveTo(0.25, -170, -37.5), cc.moveTo(0.1, -150, -37.5), cc.moveTo(0.1, -162, -37.5)));
+        this.right.x = 0;
+        this.right.runAction(cc.sequence(cc.moveTo(0.25, 170, -41), cc.moveTo(0.1, 150, -41), cc.moveTo(0.1, 160, -41)));
+        this.crown.active = false;
+        this.leftLeaf.active = false;
+        this.rightLeaf.active = false;
+        this.schedule(function () {
+            _this.titleBg.active = true;
+            _this.crown.active = true;
+            _this.crown.y = 40;
+            _this.crown.runAction(cc.sequence(cc.moveTo(0.1, 0, 110), cc.moveTo(0.05, 0, 105), cc.moveTo(0.15, 0, 70), cc.moveTo(0.05, 0, 85), cc.moveTo(0.05, 0, 80)));
+            _this.crown.scale = 0.6;
+            _this.crown.runAction(cc.sequence(cc.scaleTo(0.2, 1), cc.scaleTo(0.05, 0.95)));
+            _this.schedule(function () {
+                _this.crown.rotation = -5;
+                _this.crown.runAction(cc.sequence(cc.rotateTo(0.15, 5), cc.rotateTo(0.05, -2), cc.rotateTo(0.05, 0)));
+            }, 0, 0, 0.15);
+            _this.schedule(function () {
+                _this.leftLeaf.active = true;
+                _this.leftLeaf.scale = 0.6;
+                _this.leftLeaf.runAction(cc.sequence(cc.scaleTo(0.2, 1.1), cc.scaleTo(0.05, 1)));
+                _this.leftLeaf.x = -50;
+                _this.leftLeaf.y = 40;
+                _this.leftLeaf.runAction(cc.sequence(cc.moveTo(0.1, -80, 80), cc.moveTo(0.05, -85, 74)));
+                _this.rightLeaf.active = true;
+                _this.rightLeaf.scale = 0.6;
+                _this.rightLeaf.runAction(cc.sequence(cc.scaleTo(0.2, 1.1), cc.scaleTo(0.05, 1)));
+                _this.rightLeaf.x = 50;
+                _this.rightLeaf.y = 40;
+                _this.rightLeaf.runAction(cc.sequence(cc.moveTo(0.1, 78, 80), cc.moveTo(0.05, 82, 73)));
+                // show btn
+                _this.schedule(function () {
+                    _this.btn_next.active = true;
+                    _this.btn_back.active = true;
+                }, 0, 0, 0.8);
+            }, 0, 0, 0.3);
+        }, 0, 0, 0.3);
+    };
+    OverView.prototype.setFrame = function (lvlIdx) {
+        var _this = this;
+        !this.lvlSelectScript && (this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect_1.default));
+        cc.loader.load(GameView_1.default.BaseUrl + 'solution/' + this.lvlSelectScript.titleJson[lvlIdx] + '.png', function (error, tex) {
+            _this.tips.getComponent(cc.Sprite).spriteFrame = new cc.SpriteFrame(tex);
+            _this.tips.scale = 0.85;
+        });
+    };
+    OverView.prototype.addBtnListener = function () {
+        var _this = this;
+        // btn next
+        this.btn_next.on(cc.Node.EventType.TOUCH_START, function (e) {
+            if (_this.touchTarget && _this.touchTarget != e.target)
+                return;
+            _this.touchTarget = e.target;
+            _this.btn_next.color = new cc.Color(180, 180, 180);
+        });
+        this.btn_next.on(cc.Node.EventType.TOUCH_CANCEL, function (e) {
+            if (_this.touchTarget && _this.touchTarget != e.target)
+                return;
+            _this.touchTarget = null;
+            _this.btn_next.color = new cc.Color(255, 255, 255);
+        });
+        this.btn_next.on(cc.Node.EventType.TOUCH_END, function (e) {
+            if (_this.touchTarget && _this.touchTarget != e.target)
+                return;
+            _this.touchTarget = null;
+            _this.btn_next.color = new cc.Color(255, 255, 255);
+            AudioMgr_1.default.instance.play('button');
+            _this.gameScript.nextGame();
+            _this.node.active = false;
+            _this.btn_next.active = false;
+            _this.btn_back.active = false;
+        });
+        // btn back
+        this.btn_back.on(cc.Node.EventType.TOUCH_START, function (e) {
+            if (_this.touchTarget && _this.touchTarget != e.target)
+                return;
+            _this.touchTarget = e.target;
+            _this.btn_back.color = new cc.Color(180, 180, 180);
+        });
+        this.btn_back.on(cc.Node.EventType.TOUCH_CANCEL, function (e) {
+            if (_this.touchTarget && _this.touchTarget != e.target)
+                return;
+            _this.touchTarget = null;
+            _this.btn_back.color = new cc.Color(255, 255, 255);
+        });
+        this.btn_back.on(cc.Node.EventType.TOUCH_END, function (e) {
+            if (_this.touchTarget && _this.touchTarget != e.target)
+                return;
+            _this.touchTarget = null;
+            _this.btn_back.color = new cc.Color(255, 255, 255);
+            AudioMgr_1.default.instance.play('button');
+            _this.node.active = false;
+            _this.GameView.active = false;
+            _this.btn_next.active = false;
+            _this.btn_back.active = false;
+            _this.LvlSelectView.active = true;
+            _this.unscheduleAllCallbacks();
+        });
+    };
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "HomeView", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "GameView", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "LvlSelectView", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "btn_back", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "btn_next", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "lvlLabel", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "tips", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "title", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "titleBg", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "center", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "left", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "right", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "crown", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "leftLeaf", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "rightLeaf", void 0);
+    __decorate([
+        property(cc.Node)
+    ], OverView.prototype, "label", void 0);
+    OverView = __decorate([
+        ccclass
+    ], OverView);
+    return OverView;
+}(cc.Component));
+exports.default = OverView;
+
+cc._RF.pop();
+        }
+        if (CC_EDITOR) {
+            __define(__module.exports, __require, __module);
+        }
+        else {
+            cc.registerModuleFunc(__filename, function () {
+                __define(__module.exports, __require, __module);
+            });
+        }
+        })();
+        //# sourceMappingURL=OverView.js.map
+        

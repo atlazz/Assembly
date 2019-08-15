@@ -1,0 +1,1 @@
+{"version":3,"sources":["wx.ts"],"names":[],"mappings":";;;;;AAAA,kBAAe,MAAM,CAAC,IAAI,CAAC,CAAC","file":"","sourceRoot":"..\\..\\..\\..\\..\\assets\\scripts\\SDK","sourcesContent":["export default window['wx'];"]}

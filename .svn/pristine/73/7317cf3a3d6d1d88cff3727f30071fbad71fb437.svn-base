@@ -1,0 +1,15 @@
+"use strict";
+cc._RF.push(module, 'c9ad1AMwpJJgbaZNmgGQGMg', 'Const');
+// scripts/Const.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/** version */
+exports.VERSION = "1.0.5";
+exports.State = {
+    PLAYING: 1,
+};
+exports.TutorialLvl = [1, 5];
+exports.WinDeltaDist = 50;
+exports.WinDeltaAngle = 30;
+
+cc._RF.pop();

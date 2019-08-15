@@ -1,0 +1,47 @@
+"use strict";
+cc._RF.push(module, '4710delrG5OxY9o3bsYfZSV', 'BtnAni');
+// scripts/component/BtnAni.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
+var BtnAni = /** @class */ (function (_super) {
+    __extends(BtnAni, _super);
+    function BtnAni() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.playFrame = [];
+        _this.maxScale = 0.95;
+        _this.minScale = 1.05;
+        _this.frameIdx = 0;
+        return _this;
+        // update (dt) {}
+    }
+    BtnAni.prototype.start = function () {
+        var _this = this;
+        // btn frame animation
+        this.sprite = this.node.getComponent(cc.Sprite);
+        this.schedule(function () {
+            // show
+            _this.sprite.spriteFrame = _this.playFrame[_this.frameIdx];
+            // update
+            _this.frameIdx = ++_this.frameIdx % 3;
+        }, 0.15, cc.macro.REPEAT_FOREVER, 0);
+        // btn scale animation
+        this.node.runAction(cc.sequence(cc.scaleTo(0.25, this.minScale), cc.scaleTo(0.5, this.maxScale), cc.scaleTo(0.25, 1)).repeatForever());
+    };
+    __decorate([
+        property({ type: Array(cc.SpriteFrame), tooltip: 'btn sprite frames', serializable: true })
+    ], BtnAni.prototype, "playFrame", void 0);
+    __decorate([
+        property()
+    ], BtnAni.prototype, "maxScale", void 0);
+    __decorate([
+        property()
+    ], BtnAni.prototype, "minScale", void 0);
+    BtnAni = __decorate([
+        ccclass
+    ], BtnAni);
+    return BtnAni;
+}(cc.Component));
+exports.default = BtnAni;
+
+cc._RF.pop();

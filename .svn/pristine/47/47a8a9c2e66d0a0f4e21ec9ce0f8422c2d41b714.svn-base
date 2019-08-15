@@ -1,0 +1,1064 @@
+(function() {"use strict";var __module = CC_EDITOR ? module : {exports:{}};var __filename = 'preview-scripts/assets/scripts/view/GameView.js';var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} : function (request) {return cc.require(request, __filename);};function __define (exports, require, module) {"use strict";
+cc._RF.push(module, '817f5S5x1NCRa/57fklU7MI', 'GameView', __filename);
+// scripts/view/GameView.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Global_1 = require("../Global");
+var Const = require("../Const");
+var LvlSelect_1 = require("./LvlSelect");
+var OverView_1 = require("./OverView");
+var ScrollViewBetter_1 = require("../component/ScrollViewBetter");
+var AudioMgr_1 = require("../component/AudioMgr");
+var wx_1 = require("../SDK/wx");
+var ws_1 = require("../SDK/ws");
+var Loading_1 = require("../component/Loading");
+var Reward_1 = require("../component/Reward");
+var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
+var GameView = /** @class */ (function (_super) {
+    __extends(GameView, _super);
+    function GameView() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.btn_back = null;
+        _this.btn_restart = null;
+        _this.btn_hint = null;
+        _this.progressBar = null;
+        _this.frame_solution = null;
+        _this.frame_question = null;
+        _this.title = null;
+        _this.lvlLabel = null;
+        _this.tips = null;
+        _this.container = null;
+        _this.completeIcon = null;
+        _this.flash = null;
+        _this.mask1 = null;
+        _this.mask2 = null;
+        _this.line_left = null;
+        _this.line_right = null;
+        _this.line_left2 = null;
+        _this.line_right2 = null;
+        _this.line_rotate = null;
+        _this.finger = null;
+        _this.HomeView = null;
+        _this.LvlSelectView = null;
+        _this.OverView = null;
+        _this.winStep = 0.1;
+        _this.winStep_preload = 0.1;
+        _this.canTouch = true;
+        _this.touchID = null;
+        return _this;
+        // update (dt) {}
+    }
+    GameView_1 = GameView;
+    GameView.prototype.start = function () {
+        // get script
+        !this.lvlSelectScript && (this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect_1.default));
+        this.overScript = this.OverView.getComponent(OverView_1.default);
+        this.addBtnListener();
+        this.addRotListener();
+        // btn hint animation
+        this.btn_hint.runAction(cc.sequence(cc.scaleTo(0.5, 1.3), cc.scaleTo(0.5, 1)).repeatForever());
+    };
+    GameView.prototype.startGame = function (lvlIdx) {
+        lvlIdx && (this.level = lvlIdx);
+        if (this.level > Global_1.default.config.MaxLevel) {
+            console.log('over max level', this.level);
+            this.node.active = false;
+            this.LvlSelectView.active = true;
+            return;
+        }
+        console.log('gameStart. level: ', this.level);
+        // update
+        this.lvlLabel.getComponent(cc.Label).string = '第 ' + this.level + ' 关';
+        // load
+        this.loadTimeStamp = Date.now();
+        this.loadStage(this.level, this.loadTimeStamp, false);
+    };
+    GameView.prototype.nextGame = function () {
+        this.level++;
+        this.startGame();
+    };
+    GameView.prototype.restartGame = function () {
+        var _this = this;
+        // reset items
+        Object.keys(this.items).forEach(function (key) {
+            _this.items[key].runAction(cc.moveTo(0.2, _this.lvlConf.question[key].posX, _this.lvlConf.question[key].posY));
+            _this.items[key].runAction(cc.rotateTo(0.2, _this.lvlConf.question[key].rot));
+        });
+        this.selected && (this.items[this.selected].color = new cc.Color(255, 255, 255));
+        // reset
+        this.reset();
+        if (Const.TutorialLvl.indexOf(this.level) >= 0) {
+            // show tutorial
+            this.schedule(function () { _this.showTutorial(_this.level); }, 0.21, 0);
+        }
+    };
+    GameView.prototype.reset = function () {
+        this.isWin = false;
+        !this.winBar && (this.winBar = this.progressBar.getComponent(cc.ProgressBar));
+        this.completeIcon.active = false;
+        this.winBar.progress = 0;
+        this.selected = null;
+        this.btn_restart.active = false;
+        this.btn_back.active = true;
+        this.tips.active = false;
+        this.btn_hint.active = true;
+        this.flash.active = false;
+        this.canTouch = true;
+    };
+    // preload(lvlIdx: number) {
+    //     if (lvlIdx > Global.config.MaxLevel || lvlIdx === this.preLoadLvl) return;
+    //     console.log('preload start. level: ', lvlIdx);
+    //     this.preLoadLvl = lvlIdx;
+    //     this.resCnt_preload = 0;
+    //     cc.loader.load(GameView.BaseUrl + 'question/level' + lvlIdx + '/config.json', (err, res) => {
+    //         if (err) { console.error('load conf error:', err) };
+    //         this.lvlConf_preload = res;
+    //         console.log('>>> [preload] conf: ', this.lvlConf_preload);
+    //         // reset
+    //         this.items_preload = {};
+    //         this.itemsFrame_preload = {};
+    //         // solution
+    //         !this.lvlSelectScript && (this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect));
+    //         cc.loader.load(GameView.BaseUrl + 'solution/' + this.lvlSelectScript.titleJson[lvlIdx] + '.png', (error, res1) => {
+    //             if (error) { console.error('preload solution error:', this.lvlSelectScript.titleJson[lvlIdx], error) };
+    //             (this.preLoadLvl == lvlIdx) && this.resCnt_preload++;
+    //             console.log('preload solution done. level: ' + lvlIdx + ' loadedCnt: ' + this.resCnt_preload + '/2');
+    //             this.tipsFrame_preload = new cc.SpriteFrame(res1);
+    //         });
+    //         // question item
+    //         let urls = [], names = [];
+    //         Object.keys(this.lvlConf_preload.question).forEach(v => {
+    //             names.push(v);
+    //             urls.push(GameView.BaseUrl + 'question/level' + lvlIdx + '/' + v + '.png');
+    //         });
+    //         console.log('>>> [preload] urls:', urls);
+    //         cc.loader.load(urls, (err, assets) => {
+    //             if (err) { console.error('preload question error:', lvlIdx, err) };
+    //             (this.preLoadLvl == lvlIdx) && this.resCnt_preload++;
+    //             console.log('preload question done. level: ' + lvlIdx + ' loadedCnt: ' + this.resCnt_preload + '/2');
+    //             // get each item
+    //             urls.forEach((url, i) => {
+    //                 let tex: cc.Texture2D = assets.getContent(url);
+    //                 if (this.lvlConf_preload.question[names[i]]) {
+    //                     let item = new cc.Node(names[i]);
+    //                     let sp = item.addComponent(cc.Sprite);
+    //                     sp.spriteFrame = new cc.SpriteFrame(tex);
+    //                     this.items_preload[names[i]] = item;
+    //                     this.itemsFrame_preload[names[i]] = 'question';
+    //                     // set transform
+    //                     item.x = this.lvlConf_preload.question[names[i]].posX;
+    //                     item.y = this.lvlConf_preload.question[names[i]].posY;
+    //                     item.rotation = (this.lvlConf_preload.question[names[i]].rot + 360) % 360;
+    //                     item.zIndex = this.lvlConf_preload.question[names[i]].zIndex;
+    //                     // add listener
+    //                     this.addItemListener(item);
+    //                 }
+    //             })
+    //             // set win step
+    //             let len = Object.keys(this.lvlConf_preload.solution).length;
+    //             this.winStep_preload = 0.9 / (len * len); // (len*(len-1))/(1*2) * 2 + len
+    //         });
+    //     });
+    // }
+    GameView.prototype.showNetErr = function () {
+        CC_WECHATGAME && wx_1.default.showToast && wx_1.default.showToast({
+            title: '请检查网络',
+            icon: 'fail',
+        });
+    };
+    GameView.prototype.hideTutorial = function () {
+        this.mask1.active = false;
+        this.mask2.active = false;
+        this.line_left.active = false;
+        this.line_right.active = false;
+        this.line_rotate.active = false;
+        this.finger.active = false;
+        this.finger.stopAllActions();
+        this.unscheduleAllCallbacks();
+    };
+    GameView.prototype.showTutorial = function (lvlIdx) {
+        var _this = this;
+        this.hideTutorial();
+        switch (lvlIdx) {
+            case 1:
+                this.mask1.active = true;
+                var item_1 = this.container.getChildByName('3');
+                this.line_left.active = true;
+                this.line_left.x = item_1.x;
+                this.line_left.y = item_1.y;
+                // finger animation
+                this.finger.active = true;
+                var srcPos1_1 = item_1.getPosition().clone();
+                var dstPos1_1 = new cc.Vec2(this.lvlConf.solution['3'].posX, this.lvlConf.solution['3'].posY);
+                var tmpPos1_1 = new cc.Vec2((this.lvlConf.solution['3'].posX - item_1.x) / 2 - 200, (this.lvlConf.solution['3'].posY - item_1.y) / 3);
+                this.finger.setPosition(srcPos1_1);
+                var play1 = function () {
+                    _this.finger.setPosition(srcPos1_1);
+                    _this.finger.runAction(cc.bezierTo(0.5, [srcPos1_1, tmpPos1_1, dstPos1_1]));
+                };
+                this.schedule(play1, 1, cc.macro.REPEAT_FOREVER, 0);
+                // add listener
+                item_1 && this.addItemListener(item_1, function () {
+                    _this.setSelectFramePos();
+                    _this.updateProgress();
+                    item_1.color = new cc.Color(255, 255, 255);
+                    item_1.off(cc.Node.EventType.TOUCH_START), item_1.off(cc.Node.EventType.TOUCH_MOVE), item_1.off(cc.Node.EventType.TOUCH_CANCEL), item_1.off(cc.Node.EventType.TOUCH_END);
+                    _this.selected = null;
+                    item_1.runAction(cc.moveTo(0.2, _this.lvlConf.solution['3'].posX, _this.lvlConf.solution['3'].posY));
+                    _this.schedule(function () {
+                        _this.line_left.active = false;
+                        _this.finger.stopAllActions();
+                        _this.unscheduleAllCallbacks();
+                        // this.unschedule(play1);
+                        var item2 = _this.container.getChildByName('1');
+                        item2 && _this.addItemListener(item2);
+                        _this.line_right.active = true;
+                        _this.line_right.x = item2.x;
+                        _this.line_right.y = item2.y;
+                        // finger animation
+                        var srcPos2 = item2.getPosition().clone();
+                        var dstPos2 = new cc.Vec2(_this.lvlConf.solution['1'].posX, _this.lvlConf.solution['1'].posY);
+                        var tmpPos2 = new cc.Vec2((_this.lvlConf.solution['1'].posX - item2.x) / 2 + 300, (_this.lvlConf.solution['1'].posY - item2.y) / 3);
+                        _this.finger.setPosition(srcPos2);
+                        var play2 = function () {
+                            _this.finger.setPosition(srcPos2);
+                            _this.finger.runAction(cc.bezierTo(0.5, [srcPos2, tmpPos2, dstPos2]));
+                        };
+                        _this.schedule(play2, 1, cc.macro.REPEAT_FOREVER, 0);
+                    }, 0.2, 0);
+                });
+                break;
+            case 5:
+                this.mask1.active = true;
+                var item3_1 = this.container.getChildByName('3');
+                this.line_left2.active = true;
+                this.line_left2.x = item3_1.x;
+                this.line_left2.y = item3_1.y;
+                // finger animation
+                this.finger.active = true;
+                var srcPos_1 = item3_1.getPosition().clone();
+                var dstPos_1 = new cc.Vec2(this.lvlConf.solution['3'].posX, this.lvlConf.solution['3'].posY);
+                var tmpPos_1 = new cc.Vec2((this.lvlConf.solution['3'].posX - item3_1.x) / 2 - 300, (this.lvlConf.solution['3'].posY - item3_1.y) / 3);
+                this.finger.setPosition(srcPos_1);
+                var play3 = function () {
+                    _this.finger.setPosition(srcPos_1);
+                    _this.finger.runAction(cc.bezierTo(0.5, [srcPos_1, tmpPos_1, dstPos_1]));
+                };
+                this.schedule(play3, 1, cc.macro.REPEAT_FOREVER, 0);
+                // add listener
+                item3_1 && this.addItemListener(item3_1, function () {
+                    _this.setSelectFramePos();
+                    _this.updateProgress();
+                    item3_1.color = new cc.Color(255, 255, 255);
+                    item3_1.off(cc.Node.EventType.TOUCH_START), item3_1.off(cc.Node.EventType.TOUCH_MOVE), item3_1.off(cc.Node.EventType.TOUCH_CANCEL), item3_1.off(cc.Node.EventType.TOUCH_END);
+                    _this.selected = null;
+                    item3_1.runAction(cc.moveTo(0.2, _this.lvlConf.solution['3'].posX, _this.lvlConf.solution['3'].posY));
+                    _this.schedule(function () {
+                        _this.line_left2.active = false;
+                        _this.finger.stopAllActions();
+                        _this.unscheduleAllCallbacks();
+                        // this.unschedule(play1);
+                        var item2 = _this.container.getChildByName('1');
+                        _this.line_right2.active = true;
+                        _this.line_right2.x = item2.x;
+                        _this.line_right2.y = item2.y;
+                        // finger animation
+                        var srcPos2 = item2.getPosition().clone();
+                        var dstPos2 = new cc.Vec2(_this.lvlConf.solution['1'].posX, _this.lvlConf.solution['1'].posY);
+                        var tmpPos2 = new cc.Vec2((_this.lvlConf.solution['1'].posX - item2.x) / 2 + 300, (_this.lvlConf.solution['1'].posY - item2.y) / 3);
+                        _this.finger.setPosition(srcPos2);
+                        var play2 = function () {
+                            _this.finger.setPosition(srcPos2);
+                            _this.finger.runAction(cc.bezierTo(0.5, [srcPos2, tmpPos2, dstPos2]));
+                        };
+                        _this.schedule(play2, 1, cc.macro.REPEAT_FOREVER, 0);
+                        // add listener
+                        item2 && _this.addItemListener(item2, function () {
+                            _this.setSelectFramePos();
+                            _this.updateProgress();
+                            item2.runAction(cc.moveTo(0.2, _this.lvlConf.solution['1'].posX, _this.lvlConf.solution['1'].posY));
+                            _this.schedule(function () {
+                                _this.mask1.active = false;
+                                _this.mask2.active = true;
+                                _this.line_right2.active = false;
+                                _this.finger.stopAllActions();
+                                _this.unscheduleAllCallbacks();
+                                // this.unschedule(play1);
+                                _this.line_rotate.active = true;
+                                _this.line_rotate.x = item2.x;
+                                _this.line_rotate.y = item2.y;
+                                // finger animation
+                                var srcPos3 = new cc.Vec2(item2.x + 150, item2.y + 50);
+                                var tmpPos3 = new cc.Vec2(item2.x + 120, item2.y - 120);
+                                var dstPos3 = new cc.Vec2(item2.x - 50, item2.y - 150);
+                                _this.finger.setPosition(srcPos3);
+                                var play2 = function () {
+                                    _this.finger.setPosition(srcPos3);
+                                    _this.finger.runAction(cc.bezierTo(0.5, [srcPos3, tmpPos3, dstPos3]));
+                                };
+                                _this.schedule(play2, 1, cc.macro.REPEAT_FOREVER, 0);
+                            }, 0.2, 0);
+                        });
+                    }, 0.2, 0);
+                });
+                break;
+            default:
+                break;
+        }
+    };
+    GameView.prototype.loadStage = function (lvlIdx, timeStamp, isPreload) {
+        var _this = this;
+        if (isPreload === void 0) { isPreload = false; }
+        var log_prefix = isPreload ? 'preload' : 'load';
+        var key_suffix = isPreload ? '_preload' : '';
+        var isTutorialLvl = Const.TutorialLvl.indexOf(lvlIdx) >= 0;
+        // reset
+        this.reset();
+        // [load] already preloaded: assign preload to load
+        if (!isPreload && this.level_preload == lvlIdx && this.resCnt_preload >= 2) {
+            console.log('show preload', this.lvlConf_preload);
+            // level config
+            this.lvlConf = this.lvlConf_preload;
+            this.lvlConf_preload = null;
+            this.title.getComponent(cc.Label).string = this.lvlConf.title;
+            this.title.active = true;
+            // play title animation
+            this.title.scale = 2.5;
+            this.title.runAction(cc.sequence(cc.scaleTo(0.2, 0.9), cc.scaleTo(0.05, 1.05), cc.scaleTo(0.05, 1)));
+            // solution
+            this.tipsFrame = this.tipsFrame_preload;
+            this.tipsFrame_preload = null;
+            this.tips.getComponent(cc.Sprite).spriteFrame = this.tipsFrame.clone();
+            !this.overScript && (this.overScript = this.OverView.getComponent(OverView_1.default));
+            this.overScript.setFrame(this.tipsFrame);
+            // question item
+            this.items = this.items_preload;
+            this.items_preload = null;
+            this.itemsFrame = this.itemsFrame_preload;
+            this.itemsFrame_preload = null;
+            Object.keys(this.items).forEach(function (key) {
+                _this.container.addChild(_this.items[key]);
+            });
+            this.winStep = this.winStep_preload;
+            // show tutorial
+            isTutorialLvl && this.showTutorial(lvlIdx);
+            // preload next lvl
+            this.level_preload = lvlIdx + 1;
+            this.loadTimeStamp_preload = Date.now();
+            this.loadStage(this.level_preload, this.loadTimeStamp_preload, true);
+            return;
+        }
+        // [load] level lvlIdx unloaded or [preload]
+        !isPreload && CC_WECHATGAME && wx_1.default.showLoading && wx_1.default.showLoading({ title: '加载中' });
+        console.log(log_prefix + ' start. level: ', lvlIdx);
+        this['resCnt' + key_suffix] = 0;
+        cc.loader.load(GameView_1.BaseUrl + 'question/level' + lvlIdx + '/config.json', function (err, confJson) {
+            if (err) {
+                console.error(log_prefix + ' conf error:', err);
+                if (!isPreload && CC_WECHATGAME) {
+                    wx_1.default.hideLoading && wx_1.default.hideLoading();
+                    _this.showNetErr();
+                    return;
+                }
+            }
+            ;
+            // 已重新发起加载，前次加载弃用
+            if (timeStamp !== _this['loadTimeStamp' + key_suffix])
+                return;
+            _this['lvlConf' + key_suffix] = confJson;
+            console.log('>>> [' + log_prefix + '] conf: ', _this['lvlConf' + key_suffix]);
+            if (!isPreload) {
+                _this.title.getComponent(cc.Label).string = _this.lvlConf.title;
+                _this.title.active = true;
+                // play title animation
+                _this.title.scale = 2.5;
+                _this.title.runAction(cc.sequence(cc.scaleTo(0.2, 0.9), cc.scaleTo(0.05, 1.05), cc.scaleTo(0.05, 1)));
+            }
+            _this['items' + key_suffix] = {};
+            _this['itemsFrame' + key_suffix] = {};
+            // solution
+            !_this.lvlSelectScript && (_this.lvlSelectScript = _this.LvlSelectView.getComponent(LvlSelect_1.default));
+            cc.loader.load(GameView_1.BaseUrl + 'solution/' + _this.lvlSelectScript.titleJson[lvlIdx] + '.png', function (error, tex) {
+                if (error) {
+                    console.error(log_prefix + ' solution error:', _this.lvlSelectScript.titleJson[lvlIdx], error);
+                    if (!isPreload && CC_WECHATGAME) {
+                        wx_1.default.hideLoading && wx_1.default.hideLoading();
+                        _this.showNetErr();
+                        return;
+                    }
+                }
+                ;
+                // 已重新发起加载，前次加载弃用
+                if (timeStamp !== _this['loadTimeStamp' + key_suffix])
+                    return;
+                _this['resCnt' + key_suffix]++;
+                console.log(log_prefix + ' solution done. level: ' + lvlIdx + ' loadedCnt: ' + _this['resCnt' + key_suffix] + '/2');
+                _this['tipsFrame' + key_suffix] = new cc.SpriteFrame(tex);
+                if (!isPreload) {
+                    _this.tips.getComponent(cc.Sprite).spriteFrame = _this.tipsFrame.clone();
+                    !_this.overScript && (_this.overScript = _this.OverView.getComponent(OverView_1.default));
+                    _this.overScript.setFrame(_this.tipsFrame);
+                }
+            });
+            // question item
+            var urls = [], names = [];
+            Object.keys(_this['lvlConf' + key_suffix].question).forEach(function (v) {
+                names.push(v);
+                urls.push(GameView_1.BaseUrl + 'question/level' + lvlIdx + '/' + v + '.png');
+            });
+            console.log('>>> [' + log_prefix + '] urls:', urls);
+            cc.loader.load(urls, function (err2, assets) {
+                if (err2) {
+                    console.error(log_prefix + ' question error:', lvlIdx, err2);
+                    if (!isPreload && CC_WECHATGAME) {
+                        wx_1.default.hideLoading && wx_1.default.hideLoading();
+                        _this.showNetErr();
+                        return;
+                    }
+                }
+                ;
+                // 已重新发起加载，前次加载弃用
+                if (timeStamp !== _this['loadTimeStamp' + key_suffix])
+                    return;
+                // 加载完成
+                !isPreload && CC_WECHATGAME && wx_1.default.hideLoading && wx_1.default.hideLoading();
+                _this['resCnt' + key_suffix]++;
+                console.log(log_prefix + ' question done. level: ' + lvlIdx + ' loadedCnt: ' + _this['resCnt' + key_suffix] + '/2');
+                // get each item
+                urls.forEach(function (url, idx) {
+                    var tex = assets.getContent(url);
+                    // if (this['lvlConf' + key_suffix].question[names[idx]]) {
+                    // create node
+                    var item = new cc.Node(names[idx]);
+                    var sp = item.addComponent(cc.Sprite);
+                    sp.spriteFrame = new cc.SpriteFrame(tex);
+                    _this['items' + key_suffix][names[idx]] = item;
+                    _this['itemsFrame' + key_suffix][names[idx]] = 'question';
+                    // set transform
+                    item.x = _this['lvlConf' + key_suffix].question[names[idx]].posX;
+                    item.y = _this['lvlConf' + key_suffix].question[names[idx]].posY;
+                    item.rotation = (_this['lvlConf' + key_suffix].question[names[idx]].rot + 360) % 360;
+                    item.zIndex = _this['lvlConf' + key_suffix].question[names[idx]].zIndex;
+                    // add listener
+                    !isTutorialLvl && _this.addItemListener(item);
+                    // add to scene
+                    !isPreload && _this.container.addChild(item);
+                    // }
+                });
+                // set win step
+                var len = Object.keys(_this['lvlConf' + key_suffix].solution).length;
+                _this['winStep' + key_suffix] = 0.9 / (len * len); // (len*(len-1))/(1*2) * 2 + len
+                // show tutorial
+                !isPreload && isTutorialLvl && _this.showTutorial(lvlIdx);
+                // preload next lvl
+                if (!isPreload) {
+                    _this.level_preload = lvlIdx + 1;
+                    _this.loadTimeStamp_preload = Date.now();
+                    _this.loadStage(_this.level_preload, _this.loadTimeStamp_preload, true);
+                }
+            });
+        });
+    };
+    GameView.prototype.clearStage = function () {
+        console.log('clearStage');
+        this.title.active = false;
+        this.container.removeAllChildren();
+    };
+    // add item listener: select and transpostion
+    GameView.prototype.addItemListener = function (item, cb) {
+        var _this = this;
+        item.on(cc.Node.EventType.TOUCH_START, function (e) {
+            e.stopPropagation();
+            _this.touchID == null && (_this.touchID = e.getID());
+            if (_this.touchID != e.getID())
+                return;
+            if (!_this.canTouch)
+                return;
+            _this.selected && (_this.items[_this.selected].color = new cc.Color(255, 255, 255));
+            _this.selected = item.name;
+            item.color = new cc.Color(180, 180, 180);
+            // set pos
+            _this.prevPos = e.target.parent.convertToNodeSpaceAR(e.getLocation()).clone();
+            _this.posBeforeMove = item.getPosition().clone();
+        });
+        item.on(cc.Node.EventType.TOUCH_MOVE, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            if (!_this.canTouch)
+                return;
+            var currPos = e.target.parent.convertToNodeSpaceAR(e.getLocation());
+            item.x += (currPos.x - _this.prevPos.x);
+            item.y += (currPos.y - _this.prevPos.y);
+            // update pos
+            _this.prevPos.x = currPos.x;
+            _this.prevPos.y = currPos.y;
+            _this.setSelectFramePos();
+            // update progressBar
+            _this.updateProgress();
+        });
+        item.on(cc.Node.EventType.TOUCH_END, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            _this.touchID = null;
+            if (!_this.canTouch)
+                return;
+            _this.selected = item.name;
+            // is pos valid
+            if (_this.itemsFrame[_this.selected]) {
+                cb && _this.itemsFrame[_this.selected] == 'solution' && cb();
+                AudioMgr_1.default.instance.play('move');
+                // on btn_restart
+                !_this.btn_restart.active && (_this.btn_restart.active = true);
+                // update progressBar
+                _this.updateProgress();
+                // win check
+                _this.winCheck();
+            }
+            else {
+                AudioMgr_1.default.instance.play('close');
+                // pos rollback
+                item.runAction(cc.moveTo(0.2, _this.posBeforeMove));
+                _this.schedule(function () {
+                    _this.setSelectFramePos();
+                    // update progressBar
+                    _this.updateProgress();
+                }, 0.2, 0);
+            }
+            _this.prevProgress = _this.winBar.progress;
+        });
+        item.on(cc.Node.EventType.TOUCH_CANCEL, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            _this.touchID = null;
+            if (!_this.canTouch)
+                return;
+            _this.selected = item.name;
+            // is pos valid
+            if (_this.itemsFrame[_this.selected]) {
+                AudioMgr_1.default.instance.play('move');
+                cb && _this.itemsFrame[_this.selected] == 'solution' && cb();
+                // on btn_restart
+                !_this.btn_restart.active && (_this.btn_restart.active = true);
+                // update progressBar
+                _this.updateProgress();
+                // win check
+                _this.winCheck();
+            }
+            else {
+                AudioMgr_1.default.instance.play('close');
+                // pos rollback
+                item.runAction(cc.moveTo(0.2, _this.posBeforeMove));
+                _this.schedule(function () {
+                    _this.setSelectFramePos();
+                    // update progressBar
+                    _this.updateProgress();
+                }, 0.2, 0);
+            }
+            _this.prevProgress = _this.winBar.progress;
+        });
+    };
+    // add stage listener: rotation
+    GameView.prototype.addRotListener = function () {
+        var _this = this;
+        this.node.on(cc.Node.EventType.TOUCH_START, function (e) {
+            e.stopPropagation();
+            _this.touchID == null && (_this.touchID = e.getID());
+            if (_this.touchID != e.getID())
+                return;
+            if (!_this.canTouch)
+                return;
+            if (_this.selected && _this.items[_this.selected]) {
+                // set rot
+                var pos = e.target.parent.convertToNodeSpaceAR(e.getLocation());
+                var deltaX = pos.x - _this.items[_this.selected].x;
+                var deltaY = pos.y - _this.items[_this.selected].y;
+                _this.prevRot = Math.atan2(deltaX, deltaY) / Math.PI * 180;
+            }
+        });
+        this.node.on(cc.Node.EventType.TOUCH_MOVE, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            if (!_this.canTouch)
+                return;
+            if (_this.selected && _this.items[_this.selected]) {
+                // update rot
+                var pos = e.target.parent.convertToNodeSpaceAR(e.getLocation());
+                var deltaX = pos.x - _this.items[_this.selected].x;
+                var deltaY = pos.y - _this.items[_this.selected].y;
+                var currRot = Math.atan2(deltaX, deltaY) / Math.PI * 180;
+                var deltaRot = currRot - _this.prevRot;
+                deltaRot > 180 && (deltaRot -= 360);
+                deltaRot < -180 && (deltaRot += 360);
+                _this.items[_this.selected].rotation += deltaRot;
+                _this.items[_this.selected].rotation = _this.items[_this.selected].rotation % 360;
+                _this.prevRot = currRot;
+                // update progressBar
+                _this.updateProgress();
+            }
+        });
+        this.node.on(cc.Node.EventType.TOUCH_END, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            _this.touchID = null;
+            if (!_this.canTouch)
+                return;
+            if (_this.selected && _this.items[_this.selected]) {
+                _this.winCheck();
+            }
+        });
+        this.node.on(cc.Node.EventType.TOUCH_CANCEL, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            _this.touchID = null;
+            if (!_this.canTouch)
+                return;
+            if (_this.selected && _this.items[_this.selected]) {
+                _this.winCheck();
+            }
+        });
+    };
+    GameView.prototype.addBtnListener = function () {
+        var _this = this;
+        // btn back
+        this.btn_back.on(cc.Node.EventType.TOUCH_START, function (e) {
+            e.stopPropagation();
+            _this.touchID == null && (_this.touchID = e.getID());
+            if (_this.touchID != e.getID())
+                return;
+            _this.btn_back.color = new cc.Color(180, 180, 180);
+        });
+        this.btn_back.on(cc.Node.EventType.TOUCH_CANCEL, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            _this.touchID = null;
+            _this.btn_back.color = new cc.Color(255, 255, 255);
+        });
+        this.btn_back.on(cc.Node.EventType.TOUCH_END, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            _this.touchID = null;
+            _this.btn_back.color = new cc.Color(255, 255, 255);
+            AudioMgr_1.default.instance.play('button');
+            _this.clearStage();
+            _this.hideTutorial();
+            _this.node.active = false;
+            _this.LvlSelectView.active = true;
+        });
+        // btn restart
+        this.btn_restart.on(cc.Node.EventType.TOUCH_START, function (e) {
+            e.stopPropagation();
+            _this.touchID == null && (_this.touchID = e.getID());
+            if (_this.touchID != e.getID())
+                return;
+            _this.btn_restart.color = new cc.Color(180, 180, 180);
+        });
+        this.btn_restart.on(cc.Node.EventType.TOUCH_CANCEL, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            _this.touchID = null;
+            _this.btn_restart.color = new cc.Color(255, 255, 255);
+        });
+        this.btn_restart.on(cc.Node.EventType.TOUCH_END, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            _this.touchID = null;
+            _this.btn_restart.color = new cc.Color(255, 255, 255);
+            AudioMgr_1.default.instance.play('button');
+            _this.restartGame();
+        });
+        // btn hint
+        this.btn_hint.on(cc.Node.EventType.TOUCH_START, function (e) {
+            e.stopPropagation();
+            _this.touchID == null && (_this.touchID = e.getID());
+            if (_this.touchID != e.getID())
+                return;
+            var onTouch = function () {
+                AudioMgr_1.default.instance.play('hint');
+                _this.btn_hint.active = false;
+                _this.tips.active = true;
+            };
+            if (CC_WECHATGAME) {
+                if (Global_1.default.config.game_hint == 1 && _this.canTouch) {
+                    // 未超过每天视频观看次数
+                    if (!Reward_1.default.instance.isOverVideo()) {
+                        _this.canTouch = false;
+                        Reward_1.default.instance.video({
+                            pos: "game_hint",
+                            success: function () { onTouch(); },
+                            fail: function () {
+                                Reward_1.default.instance.share({
+                                    pos: "game_hint",
+                                    success: function () { onTouch(); },
+                                });
+                            },
+                            complete: function () {
+                                _this.canTouch = true;
+                            }
+                        });
+                    }
+                    else {
+                        Reward_1.default.instance.share({
+                            pos: "game_hint",
+                            success: function () { onTouch(); },
+                        });
+                    }
+                }
+                // share
+                Global_1.default.config.game_hint == 2 && Reward_1.default.instance.share({
+                    pos: "game_hint",
+                    success: function () { onTouch(); },
+                });
+            }
+            else {
+                onTouch();
+            }
+        });
+        this.btn_hint.on(cc.Node.EventType.TOUCH_CANCEL, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            _this.touchID = null;
+        });
+        this.btn_hint.on(cc.Node.EventType.TOUCH_END, function (e) {
+            e.stopPropagation();
+            if (_this.touchID != e.getID())
+                return;
+            _this.touchID = null;
+        });
+    };
+    // set selected pos in frame: question, solution or outside
+    GameView.prototype.setSelectFramePos = function () {
+        var pos_question = this.frame_question.parent.convertToNodeSpace(this.items[this.selected].getPosition());
+        var pos_solution = this.frame_solution.parent.convertToNodeSpace(this.items[this.selected].getPosition());
+        // in frame soulution
+        if (Math.abs(pos_solution.x - this.frame_solution.x) < (this.frame_solution.width / 2 - Math.min(this.items[this.selected].width, this.items[this.selected].height, this.frame_solution.height * 0.15) / 2)
+            && Math.abs(pos_solution.y - this.frame_solution.y) < (this.frame_solution.height / 2 - Math.min(this.items[this.selected].width, this.items[this.selected].height, this.frame_solution.height * 0.15) / 2)) {
+            this.itemsFrame[this.selected] = 'solution';
+        }
+        // in frame question
+        else if (Math.abs(pos_question.x - this.frame_question.x) < (this.frame_question.width / 2 - Math.min(this.items[this.selected].width, this.items[this.selected].height, this.frame_question.height * 0.15) / 2)
+            && Math.abs(pos_question.y - this.frame_question.y) < (this.frame_question.height / 2 - Math.min(this.items[this.selected].width, this.items[this.selected].height, this.frame_question.height * 0.15) / 2)) {
+            this.itemsFrame[this.selected] = 'question';
+        }
+        else { // outside
+            this.itemsFrame[this.selected] = null;
+        }
+    };
+    GameView.prototype.updateProgress = function () {
+        var _this = this;
+        var winCnt = 0;
+        this.winFlag = true;
+        var solutionItems = {};
+        Object.keys(this.itemsFrame).forEach(function (key) {
+            // all items in frame solution
+            if (_this.itemsFrame[key] == 'solution') {
+                // right item
+                if (_this.lvlConf.solution[key]) {
+                    // 1. check exist
+                    winCnt += _this.winStep;
+                    Object.keys(solutionItems).forEach(function (keySol) {
+                        // 2. win check for two items
+                        var rot1 = _this.lvlConf.solution[key].rot;
+                        var rot2 = _this.lvlConf.solution[keySol].rot;
+                        // a. null: for angle 0 - 360
+                        if (rot1 == null) {
+                            var cnt = _this.checkTwoItems(keySol, key);
+                            winCnt += _this.winStep * cnt;
+                            cnt < 2 && (_this.winFlag = false);
+                        }
+                        else if (rot2 == null) {
+                            var cnt = _this.checkTwoItems(key, keySol);
+                            winCnt += _this.winStep * cnt;
+                            cnt < 2 && (_this.winFlag = false);
+                        }
+                        // b. number or Array<numer>
+                        else {
+                            var cnt = Math.min(_this.checkTwoItems(keySol, key), _this.checkTwoItems(key, keySol));
+                            winCnt += _this.winStep * cnt;
+                            cnt < 2 && (_this.winFlag = false);
+                        }
+                    });
+                    solutionItems[key] = _this.items[key];
+                }
+                // wrong item
+                else {
+                    winCnt -= _this.winStep * 2;
+                    _this.winFlag = false;
+                }
+            }
+            // not all right items found
+            else if (_this.lvlConf.solution[key]) {
+                // console.log('unfound item:', key)
+                _this.winFlag = false;
+            }
+        });
+        winCnt >= 1 && (winCnt = 0.9);
+        winCnt < 0 && (winCnt = 0);
+        this.winBar.progress = this.winFlag ? 1 : winCnt;
+        this.completeIcon.active = this.winBar.progress == 1 ? true : false;
+    };
+    // check pos and angle for two items, return value: 0, 1, 2
+    GameView.prototype.checkTwoItems = function (key1, key2) {
+        var cnt = 0;
+        var rot1 = this.lvlConf.solution[key1].rot;
+        var rot2 = this.lvlConf.solution[key2].rot;
+        var deltaRot = ((this.items[key2].rotation - this.items[key1].rotation) + 720) % 360;
+        // a. angle type null: 无指向性, 仅判断距离
+        if (rot1 == null) {
+            cnt++;
+            this.checkPos(key1, key2, rot1) && cnt++;
+        }
+        // b. angle1 type number: conver to node space: 参照item1局部坐标系标记item2位置
+        else if (typeof rot1 == 'number') {
+            /** check pos */
+            this.checkPos(key1, key2, rot1) && cnt++;
+            /** check rot */
+            if (rot2 == null) {
+                cnt++;
+            }
+            else if (typeof rot2 == 'number') {
+                if (this.checkRot(rot1, rot2, deltaRot)) {
+                    cnt++;
+                }
+            }
+            else {
+                for (var j = 0; j < rot2.length; j++) {
+                    if (this.checkRot(rot1, rot2[j], deltaRot)) {
+                        cnt++;
+                        break;
+                    }
+                }
+                ;
+            }
+        }
+        // c. angle1 type Array<number>: conver to node space: 参照item1局部坐标系标记item2位置
+        else {
+            var flag_pos = true, flag_rot = true;
+            for (var i = 0; (flag_pos || flag_rot) && i < rot1.length; i++) {
+                /** check pos */
+                if (flag_pos) {
+                    if (this.checkPos(key1, key2, rot1[i])) {
+                        flag_pos = false;
+                        cnt++;
+                    }
+                }
+                /** check rot */
+                if (flag_rot) {
+                    if (rot2 == null) {
+                        flag_rot = false;
+                        cnt++;
+                    }
+                    else if (typeof rot2 == 'number') {
+                        if (this.checkRot(rot1[i], rot2, deltaRot)) {
+                            flag_rot = false;
+                            cnt++;
+                        }
+                    }
+                    else {
+                        for (var j = 0; flag_rot && j < rot2.length; j++) {
+                            if (this.checkRot(rot1[i], rot2[j], deltaRot)) {
+                                flag_rot = false;
+                                cnt++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return cnt;
+    };
+    GameView.prototype.checkPos = function (key1, key2, rot1) {
+        var dist;
+        var pos1 = this.items[key1].convertToWorldSpaceAR(new cc.Vec2(0, 0));
+        var pos2 = this.items[key2].convertToWorldSpaceAR(new cc.Vec2(0, 0));
+        var vecX = pos2.x - pos1.x;
+        var vecY = pos2.y - pos1.y;
+        var vecX_conf = this.lvlConf.solution[key2].posX - this.lvlConf.solution[key1].posX;
+        var vecY_conf = this.lvlConf.solution[key2].posY - this.lvlConf.solution[key1].posY;
+        // 角度360度有效，无指向性
+        if (rot1 == null) {
+            var dist1 = Math.sqrt(vecX * vecX + vecY * vecY);
+            var dist2 = Math.sqrt(vecX_conf * vecX_conf + vecY_conf * vecY_conf);
+            dist = Math.abs(dist1 - dist2);
+        }
+        else {
+            // convert item2 to item1 space
+            var sin = Math.sin(this.items[key1].rotation * Math.PI / 180);
+            var cos = Math.cos(this.items[key1].rotation * Math.PI / 180);
+            var x1 = cos * vecX - sin * vecY;
+            var y1 = sin * vecX + cos * vecY;
+            // convert answer_item2 to answer_item1 space
+            sin = Math.sin(rot1 * Math.PI / 180);
+            cos = Math.cos(rot1 * Math.PI / 180);
+            var x2 = cos * vecX_conf - sin * vecY_conf;
+            var y2 = sin * vecX_conf + cos * vecY_conf;
+            // calc dist
+            dist = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+        }
+        // check
+        return dist < Const.WinDeltaDist;
+    };
+    GameView.prototype.checkRot = function (rot1, rot2, deltaRot) {
+        var angle = Math.abs(deltaRot - (rot2 - rot1 + 720) % 360);
+        angle = Math.min(angle, Math.abs(angle - 360));
+        if (angle < Const.WinDeltaAngle) {
+            return true;
+        }
+        return false;
+    };
+    GameView.prototype.winCheck = function () {
+        var _this = this;
+        if (!this.isWin && this.winBar.progress >= 1) {
+            // block touch
+            this.canTouch = false;
+            // play win animation
+            Object.keys(this.lvlConf.solution).forEach(function (key) {
+                console.log(key, _this.items[key].getPosition(), _this.lvlConf.solution[key].posX, _this.lvlConf.solution[key].posY);
+                _this.items[key].runAction(cc.moveTo(0.2, _this.lvlConf.solution[key].posX, _this.lvlConf.solution[key].posY));
+                if (_this.lvlConf.solution[key].rot != null) {
+                    typeof (_this.lvlConf.solution[key].rot) == 'number' ? _this.items[key].runAction(cc.rotateTo(0.2, _this.lvlConf.solution[key].rot)) : _this.items[key].runAction(cc.rotateTo(0.2, _this.lvlConf.solution[key].rot[0]));
+                }
+            });
+            // reset
+            this.selected && (this.items[this.selected].color = new cc.Color(255, 255, 255));
+            this.tips.active = false;
+            // hide
+            this.btn_hint.active = false;
+            this.btn_restart.active = false;
+            this.btn_back.active = false;
+            this.hideTutorial();
+            // update
+            this.isWin = true;
+            if (this.level == Global_1.default.gameData.level) {
+                Global_1.default.gameData.level++;
+                Loading_1.default.updateGameData(true);
+                // this.lvlSelectScript.updateList(Global.gameData.level - 1, Global.gameData.level);
+                this.LvlSelectView.getChildByName('scrollView').getComponent(ScrollViewBetter_1.default).updateItemsContent();
+            }
+            // play sound
+            AudioMgr_1.default.instance.play('win');
+            // show win animation
+            this.flash.active = true;
+            this.schedule(function () { _this.flash.rotation += 1.5; }, 0.03, 100);
+            // show overView
+            var showNext_1 = function () {
+                // clear
+                _this.clearStage();
+                _this.unschedule(showNext_1);
+                _this.flash.active = false;
+                // this.node.active = false;
+                _this.OverView.active = true;
+            };
+            this.scheduleOnce(showNext_1, 2.5);
+            // post score
+            CC_WECHATGAME && ws_1.default.postGameScore({
+                key: 'clearStage',
+                id: Date.now() + "",
+                score: Global_1.default.gameData.level,
+            });
+        }
+    };
+    GameView.prototype.setState = function (state) {
+        this.state = state;
+    };
+    var GameView_1;
+    GameView.BaseUrl = "textures/game/";
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "btn_back", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "btn_restart", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "btn_hint", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "progressBar", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "frame_solution", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "frame_question", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "title", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "lvlLabel", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "tips", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "container", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "completeIcon", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "flash", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "mask1", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "mask2", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "line_left", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "line_right", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "line_left2", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "line_right2", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "line_rotate", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "finger", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "HomeView", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "LvlSelectView", void 0);
+    __decorate([
+        property(cc.Node)
+    ], GameView.prototype, "OverView", void 0);
+    GameView = GameView_1 = __decorate([
+        ccclass
+    ], GameView);
+    return GameView;
+}(cc.Component));
+exports.default = GameView;
+
+cc._RF.pop();
+        }
+        if (CC_EDITOR) {
+            __define(__module.exports, __require, __module);
+        }
+        else {
+            cc.registerModuleFunc(__filename, function () {
+                __define(__module.exports, __require, __module);
+            });
+        }
+        })();
+        //# sourceMappingURL=GameView.js.map
+        

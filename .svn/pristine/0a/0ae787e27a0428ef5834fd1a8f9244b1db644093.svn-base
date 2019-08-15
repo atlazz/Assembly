@@ -1,0 +1,28 @@
+{
+  "__type__": "cc.SpriteFrame",
+  "content": {
+    "name": "button_shake",
+    "texture": "1562f958-74a4-453d-8c43-ce222c53c943",
+    "atlas": "",
+    "rect": [
+      0,
+      0,
+      113,
+      110
+    ],
+    "offset": [
+      0,
+      0
+    ],
+    "originalSize": [
+      113,
+      110
+    ],
+    "capInsets": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}

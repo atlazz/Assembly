@@ -1,0 +1,113 @@
+"use strict";
+cc._RF.push(module, '6ec90zt9D9DmZtorSe157QY', 'Loading');
+// scripts/component/Loading.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Global_1 = require("../Global");
+var Const = require("../Const");
+var wx_1 = require("../SDK/wx");
+var ws_1 = require("../SDK/ws");
+var Loading = /** @class */ (function () {
+    function Loading() {
+        this.isGameDataLoaded = false;
+    }
+    /**微信环境初始化*/
+    Loading.prototype.initWeixin = function (onGameDataLoaded) {
+        this.onGameDataLoaded = onGameDataLoaded;
+        wx_1.default.showShareMenu({
+            withShareTicket: true
+        });
+        wx_1.default.onShareAppMessage(function () {
+            var option = ws_1.default.createShareOptions({ pos: 'ShareAppButton' });
+            return {
+                title: option.title,
+                imageUrl: option.imageUrl,
+                query: option.query,
+            };
+        });
+        ws_1.default.init({
+            host: 'ws.lesscool.cn',
+            version: Const.VERSION,
+            appid: 1141,
+            secret: '8a4b117c17f8134b3bdc5567571339d6',
+            share: {
+                title: '全民欢乐，天天游戏！',
+                image: 'http://oss.lesscool.cn/fcdh/96d172496dbafa4ab9c8335a7133476c.png',
+            },
+        });
+        this.loginWs();
+    };
+    /**登录ws后台*/
+    Loading.prototype.loginWs = function () {
+        wx_1.default.showLoading({ title: '登录中', mask: true });
+        ws_1.default.onLoginComplete(this.onLoginComplete.bind(this));
+        ws_1.default.login();
+    };
+    /**登录ws后台完成*/
+    Loading.prototype.onLoginComplete = function (res, gameData) {
+        if (ws_1.default.getLoginStatus() === 'success') {
+            console.log("login_succeed");
+            ws_1.default.traceEvent('login_succeed');
+            wx_1.default.hideLoading();
+            console.log('ws.conf', ws_1.default.conf); // 通用配置
+            console.log('ws.user', ws_1.default.user); // 用户信息
+            console.log('ws.data', ws_1.default.data); // 本地保存的游戏数据
+            this.loadConfig();
+            this.loadGameData(gameData);
+        }
+        else if (ws_1.default.getLoginStatus() === 'fail') {
+            console.log("login_failed");
+            ws_1.default.traceEvent('login_failed');
+            wx_1.default.hideLoading();
+            wx_1.default.showModal({
+                title: '登陆失败',
+                content: '请允许授权',
+                confirmText: '重新登陆',
+                cancelText: '关闭',
+                success: function (res) {
+                    wx_1.default.showLoading({ title: '登录中', mask: true });
+                    ws_1.default.login();
+                }
+            });
+        }
+    };
+    /**后台配置加载完成*/
+    Loading.prototype.loadConfig = function () {
+        Object.assign(Global_1.default.config, ws_1.default.conf);
+    };
+    /**加载后台游戏数据*/
+    Loading.prototype.loadGameData = function (gameData) {
+        var _this = this;
+        if (gameData && gameData.updateTimestamp) {
+            if (ws_1.default.data && ws_1.default.data.updateTimestamp && ws_1.default.data.updateTimestamp > gameData.updateTimestamp) {
+                ws_1.default.setAllData(ws_1.default.data, true);
+            }
+            else {
+                ws_1.default.setAllData(gameData);
+            }
+        }
+        else if (!ws_1.default.data || !ws_1.default.data.updateTimestamp) {
+            ws_1.default.setAllData(Global_1.default.gameData, true);
+        }
+        Global_1.default.gameData = Object.assign(Global_1.default.gameData, ws_1.default.data);
+        //关闭更新游戏数据
+        wx_1.default.onHide(function () {
+            _this.updateGameData(true);
+        });
+        //刷新当前广告banner
+        ws_1.default.onShow(function (res) {
+        });
+        this.isGameDataLoaded = true;
+        this.onGameDataLoaded && this.onGameDataLoaded();
+    };
+    /**提交游戏数据*/
+    Loading.prototype.updateGameData = function (post) {
+        Global_1.default.gameData.updateTimestamp = Date.now();
+        post && console.log('updateGameData', Global_1.default.gameData);
+        CC_WECHATGAME && ws_1.default.setAllData(Global_1.default.gameData, post);
+    };
+    return Loading;
+}());
+exports.default = new Loading();
+
+cc._RF.pop();

@@ -74,7 +74,7 @@ export default class OverView extends cc.Component {
         this.schedule(this.playEff, 0.4, 0);
     }
 
-    playEff() {
+    private playEff() {
         // play sound
         this.schedule(() => AudioMgr.instance.play('starin'), 0.1, 0);
         // play win animation
@@ -116,8 +116,12 @@ export default class OverView extends cc.Component {
                 this.rightLeaf.runAction(cc.sequence(cc.moveTo(0.1, 78, 80), cc.moveTo(0.05, 82, 73)));
                 // show btn
                 this.schedule(() => {
-                    this.btn_next.active = true;
                     this.btn_back.active = true;
+                    // play btn animation
+                    this.btn_next.scale = 0.6;
+                    this.btn_next.active = true;
+                    this.btn_next.stopAllActions();
+                    this.btn_next.runAction(cc.sequence(cc.scaleTo(0.25, 1.05), cc.scaleTo(0.5, 0.95), cc.scaleTo(0.25, 1)).repeatForever());
                 }, 0, 0, 0.8);
             }, 0, 0, 0.3);
         }, 0, 0, 0.3);
@@ -131,7 +135,7 @@ export default class OverView extends cc.Component {
         });
     }
 
-    addBtnListener() {
+    private addBtnListener() {
         // btn next
         this.btn_next.on(cc.Node.EventType.TOUCH_START, (e) => {
             if (this.touchTarget && this.touchTarget != e.target) return;

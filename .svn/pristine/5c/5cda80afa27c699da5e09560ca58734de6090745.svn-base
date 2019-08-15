@@ -1,0 +1,63 @@
+"use strict";
+cc._RF.push(module, 'ae81alFN2FAI7vuAEsaiZax', 'Global');
+// scripts/Global.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Global = {
+    gameData: {
+        //音乐开关
+        musicEnabled: true,
+        //音效开关
+        soundEnabled: true,
+        //振动开关
+        vibrationEnabled: true,
+        //数据更新时间
+        updateTimestamp: 0,
+        //视频观看次数
+        videoCount: 0,
+        lastVideoTimestamp: 0,
+        //转发次数
+        shareCount: 0,
+        lastShareTimestamp: 0,
+        //关卡索引
+        level: 1,
+    },
+    config: {
+        allow_share: true,
+        allow_video: true,
+        share_first: false,
+        share_number: 5,
+        video_number: 6,
+        share_time: 5,
+        banner_time: 180,
+        share_delay: 4,
+        online: true,
+        debug: false,
+        allow_revive: true,
+        banner_delay: 1,
+        deny_banner: false,
+        share_fail: "'操作失败，请换个群'",
+        distance_iphonex: 50,
+        banner_click_time: 2,
+        games: {},
+        shares: {},
+        videos: {},
+        banners: {},
+        try_cannon: 1,
+        try_ball: 1,
+        revive: 1,
+        reward_triple: 1,
+        bulletRewardType: 1,
+        cannonRewardType: 4,
+        hasTreasure: true,
+        banner: "",
+        banner_number: 0,
+        show_number: 2,
+        game_hint: 2,
+        MaxLevel: 80,
+        MaxShowLevel: 80
+    },
+};
+exports.default = Global;
+
+cc._RF.pop();

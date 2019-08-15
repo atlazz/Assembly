@@ -1,0 +1,75 @@
+"use strict";
+cc._RF.push(module, '34dd84xfN9Lx6Qxdb19GlMS', 'AudioMgr');
+// scripts/component/AudioMgr.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
+var AudioMgr = /** @class */ (function (_super) {
+    __extends(AudioMgr, _super);
+    function AudioMgr() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.button = null;
+        _this.close = null;
+        _this.hint = null;
+        _this.move = null;
+        _this.win = null;
+        _this.starin = null;
+        return _this;
+        // update (dt) {}
+    }
+    AudioMgr_1 = AudioMgr;
+    AudioMgr.prototype.onLoad = function () {
+        !AudioMgr_1.instance && (AudioMgr_1.instance = this);
+    };
+    AudioMgr.prototype.play = function (name) {
+        switch (name) {
+            case 'button':
+                cc.audioEngine.playEffect(this.button, false);
+                break;
+            case 'close':
+                cc.audioEngine.playEffect(this.close, false);
+                break;
+            case 'hint':
+                cc.audioEngine.playEffect(this.hint, false);
+                break;
+            case 'move':
+                cc.audioEngine.playEffect(this.move, false);
+                break;
+            case 'win':
+                cc.audioEngine.playEffect(this.win, false);
+                break;
+            case 'starin':
+                cc.audioEngine.playEffect(this.starin, false);
+                break;
+        }
+    };
+    AudioMgr.prototype.closeAll = function () {
+        cc.audioEngine.stopAllEffects();
+    };
+    var AudioMgr_1;
+    __decorate([
+        property({ type: cc.AudioClip })
+    ], AudioMgr.prototype, "button", void 0);
+    __decorate([
+        property({ type: cc.AudioClip })
+    ], AudioMgr.prototype, "close", void 0);
+    __decorate([
+        property({ type: cc.AudioClip })
+    ], AudioMgr.prototype, "hint", void 0);
+    __decorate([
+        property({ type: cc.AudioClip })
+    ], AudioMgr.prototype, "move", void 0);
+    __decorate([
+        property({ type: cc.AudioClip })
+    ], AudioMgr.prototype, "win", void 0);
+    __decorate([
+        property({ type: cc.AudioClip })
+    ], AudioMgr.prototype, "starin", void 0);
+    AudioMgr = AudioMgr_1 = __decorate([
+        ccclass
+    ], AudioMgr);
+    return AudioMgr;
+}(cc.Component));
+exports.default = AudioMgr;
+
+cc._RF.pop();

@@ -1,0 +1,1 @@
+{"version":3,"sources":["ws.ts"],"names":[],"mappings":";;;;;AAAA,iCAA4B;AAE5B,IAAM,EAAE,GAAQ,eAAK,CAAC;AACtB,kBAAe,EAAE,CAAC","file":"","sourceRoot":"..\\..\\..\\..\\..\\assets\\scripts\\SDK","sourcesContent":["import wsSDK from './wsSDK';\r\n\r\nconst ws: any = wsSDK;\r\nexport default ws;"]}

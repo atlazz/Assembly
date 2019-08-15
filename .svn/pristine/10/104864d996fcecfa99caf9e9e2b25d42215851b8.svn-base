@@ -1,0 +1,134 @@
+(function() {"use strict";var __module = CC_EDITOR ? module : {exports:{}};var __filename = 'preview-scripts/assets/scripts/view/HomeView.js';var __require = CC_EDITOR ? function (request) {return cc.require(request, require);} : function (request) {return cc.require(request, __filename);};function __define (exports, require, module) {"use strict";
+cc._RF.push(module, '2e5d528yyhBy7VbEHzRgyCj', 'HomeView', __filename);
+// scripts/view/HomeView.ts
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Global_1 = require("../Global");
+var Const = require("../Const");
+var GameView_1 = require("./GameView");
+var LvlSelect_1 = require("./LvlSelect");
+var Loading_1 = require("../component/Loading");
+var AudioMgr_1 = require("../component/AudioMgr");
+var _a = cc._decorator, ccclass = _a.ccclass, property = _a.property;
+var HomeView = /** @class */ (function (_super) {
+    __extends(HomeView, _super);
+    function HomeView() {
+        var _this = _super.call(this) || this;
+        _this.btn_start = null;
+        _this.GameView = null;
+        _this.LvlSelectView = null;
+        _this.label_version = null;
+        _this.initCnt = 0;
+        _this.hasAddlistener = false;
+        // clear old list
+        try {
+            CC_WECHATGAME && wxDownloader['cleanCache'](wxDownloader['getCacheName'](GameView_1.default.BaseUrl + 'solution/title.json'));
+        }
+        catch (e) {
+            console.log("clear cache file err:", e);
+        }
+        return _this;
+    }
+    HomeView.prototype.start = function () {
+        var _this = this;
+        // login
+        if (CC_WECHATGAME) {
+            Loading_1.default.initWeixin(function () {
+                console.log('login succeed.');
+                _this.initCnt++;
+                _this.initCnt >= 2 && _this.onInitComplete();
+            });
+        }
+        else {
+            GameView_1.default.BaseUrl = 'https://coolant.oss-cn-shenzhen.aliyuncs.com/Assembly/textures/game/';
+            this.initCnt++;
+            this.initCnt >= 2 && this.onInitComplete();
+        }
+        // print version
+        this.label_version.getComponent(cc.Label).string = Const.VERSION;
+        // init LvlSelect
+        this.lvlSelectScript = this.LvlSelectView.getComponent(LvlSelect_1.default);
+        // load title json data
+        cc.loader.load(GameView_1.default.BaseUrl + 'solution/title.json', function (error, jsonData) {
+            if (error) {
+                console.error('load title json error:', error);
+            }
+            ;
+            _this.lvlSelectScript.titleJson = jsonData;
+            console.log('title json loaded.', _this.lvlSelectScript.titleJson);
+            _this.initCnt++;
+            _this.initCnt >= 2 && _this.onInitComplete();
+        });
+    };
+    HomeView.prototype.addBtnListener = function () {
+        var _this = this;
+        // btn_start
+        this.btn_start.on(cc.Node.EventType.TOUCH_START, function (e) {
+            if (_this.touchTarget && _this.touchTarget != e.target)
+                return;
+            _this.touchTarget = e.target;
+            _this.btn_start.color = new cc.Color(180, 180, 180);
+        });
+        this.btn_start.on(cc.Node.EventType.TOUCH_CANCEL, function (e) {
+            if (_this.touchTarget && _this.touchTarget != e.target)
+                return;
+            _this.touchTarget = null;
+            _this.btn_start.color = new cc.Color(255, 255, 255);
+        });
+        this.btn_start.on(cc.Node.EventType.TOUCH_END, function (e) {
+            if (_this.touchTarget && _this.touchTarget != e.target)
+                return;
+            _this.touchTarget = null;
+            _this.btn_start.color = new cc.Color(255, 255, 255);
+            AudioMgr_1.default.instance.play('button');
+            _this.gameScript.startGame(Global_1.default.gameData.level);
+            _this.node.active = false;
+            _this.GameView.active = true;
+        });
+    };
+    HomeView.prototype.onInitComplete = function () {
+        // preload level
+        this.gameScript = this.GameView.getComponent(GameView_1.default);
+        // this.gameScript.preload(Global.gameData.level);
+        if (Global_1.default.gameData.level <= Global_1.default.config.MaxLevel) {
+            this.gameScript.level_preload = Global_1.default.gameData.level;
+            this.gameScript.loadTimeStamp_preload = Date.now();
+            this.gameScript.loadStage(this.gameScript.level_preload, this.gameScript.loadTimeStamp_preload, true);
+        }
+        // init lvlSelect
+        this.lvlSelectScript.init();
+        // add listener
+        this.addBtnListener();
+    };
+    __decorate([
+        property(cc.Node)
+    ], HomeView.prototype, "btn_start", void 0);
+    __decorate([
+        property(cc.Node)
+    ], HomeView.prototype, "GameView", void 0);
+    __decorate([
+        property(cc.Node)
+    ], HomeView.prototype, "LvlSelectView", void 0);
+    __decorate([
+        property(cc.Node)
+    ], HomeView.prototype, "label_version", void 0);
+    HomeView = __decorate([
+        ccclass
+    ], HomeView);
+    return HomeView;
+}(cc.Component));
+exports.default = HomeView;
+
+cc._RF.pop();
+        }
+        if (CC_EDITOR) {
+            __define(__module.exports, __require, __module);
+        }
+        else {
+            cc.registerModuleFunc(__filename, function () {
+                __define(__module.exports, __require, __module);
+            });
+        }
+        })();
+        //# sourceMappingURL=HomeView.js.map
+        
